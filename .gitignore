@@ -74,3 +74,4 @@ Thumbs.db
 output/*.html
 !input/.gitkeep
 !output/.gitkeep
+input/

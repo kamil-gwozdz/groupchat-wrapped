@@ -443,6 +443,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             winners=[(name, f"{count}x") for name, count in top_starters],
             value=top_starters[0][1],
             extra_info="Zawsze ma temat do rozmowy!",
+            fun_fact="📊 Algorytm: pierwsza wiadomość po 4+ godzinach ciszy = nowa rozmowa"
         ))
     
     # 10. Zamykacz - Conversation ender
@@ -457,6 +458,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             winners=[(name, f"{count}x") for name, count in top_enders],
             value=top_enders[0][1],
             extra_info="Ostatnie słowo zawsze należy do niego!",
+            fun_fact="📊 Algorytm: ostatnia wiadomość przed 4+ godzinami ciszy = koniec rozmowy"
         ))
     
     # 11. Reakcjonista - Most reactions given

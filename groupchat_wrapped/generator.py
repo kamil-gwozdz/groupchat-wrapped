@@ -219,11 +219,14 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
         .name {{
             flex: 1;
+            margin-right: 15px;
         }}
 
         .score {{
             font-weight: 600;
             opacity: 0.9;
+            margin-left: 10px;
+            white-space: nowrap;
         }}
 
         /* Horizontal Timeline for group identity changes */
