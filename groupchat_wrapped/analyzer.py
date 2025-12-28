@@ -512,18 +512,18 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             fun_fact=f"Reakcje: {reactions_str}",
         ))
     
-    # 13. Paparazzo - Most photos
+    # 13. Galernik - Most photos/images
     if photos_per_person:
         top_photographers = photos_per_person.most_common(3)
         categories.append(CategoryResult(
             category_id="paparazzo",
-            title="📸 Paparazzo",
-            subtitle="Wysłał najwięcej zdjęć",
-            icon="🖼️",
+            title="🖼️ Galernik",
+            subtitle="Wysłał najwięcej obrazków",
+            icon="📁",
             winner=top_photographers[0][0],
-            winners=[(name, f"{count} zdjęć") for name, count in top_photographers],
+            winners=[(name, f"{count} obrazków") for name, count in top_photographers],
             value=top_photographers[0][1],
-            extra_info="Każdy moment musi być uwieczniony!",
+            extra_info="Memy, zdjęcia, screenshoty - wszystko się liczy!",
         ))
     
     # 14. Śmieszek - Most GIFs/Stickers
