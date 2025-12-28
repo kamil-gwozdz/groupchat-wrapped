@@ -75,3 +75,4 @@ output/*.html
 !input/.gitkeep
 !output/.gitkeep
 input/
+input/

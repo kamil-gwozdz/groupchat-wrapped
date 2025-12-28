@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Młodzi Waginierzy - Wrapped 2025</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        .container {
+            max-width: 100vw;
+            overflow: hidden;
+        }
+
+        /* Slide styles */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px 120px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Gradient backgrounds for slides */
+        .slide:nth-child(odd) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .slide:nth-child(even) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .slide:nth-child(3n) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .slide:nth-child(4n) {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .slide:nth-child(5n) {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .slide:nth-child(6n) {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+        }
+
+        .slide:nth-child(7n) {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-size: clamp(2rem, 8vw, 4rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .winner {
+            font-size: clamp(2rem, 10vw, 5rem);
+            font-weight: 900;
+            margin: 30px 0;
+            background: linear-gradient(to right, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
+            to { filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8)); }
+        }
+
+        .value {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            font-weight: 700;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 20px;
+        }
+
+        .extra-info {
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .fun-fact {
+            font-size: 1rem;
+            font-style: italic;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        /* Top 5 list */
+        .top-list {
+            list-style: none;
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .top-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 25px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .top-list li:hover {
+            transform: translateX(10px);
+            background: rgba(255,255,255,0.25);
+        }
+
+        .top-list li:first-child {
+            background: linear-gradient(90deg, rgba(255,215,0,0.4), rgba(255,255,255,0.15));
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .rank {
+            font-weight: 900;
+            margin-right: 15px;
+            min-width: 30px;
+        }
+
+        .name {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .score {
+            font-weight: 600;
+            opacity: 0.9;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        /* Horizontal Timeline for group identity changes */
+        .timeline-slide-content {
+            max-width: 95vw !important;
+            width: 95vw !important;
+            padding-bottom: 80px !important;
+        }
+        
+        .horizontal-timeline-wrapper {
+            width: 100%;
+            padding: 10px;
+            margin: 20px 0;
+        }
+        
+        .timeline-names-row {
+            display: flex;
+            width: calc(100% - 35px);
+            margin-bottom: 0;
+            align-items: flex-end;
+        }
+        
+        .timeline-name-entry {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+            padding: 0 2px;
+        }
+        
+        .name-connector {
+            width: 3px;
+            height: 12px;
+            opacity: 0.7;
+        }
+        
+        .name-bubble {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 6px 10px;
+            text-align: center;
+            width: 100%;
+            backdrop-filter: blur(5px);
+            margin-bottom: 0;
+        }
+        
+        .name-text {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.3;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        .name-date {
+            display: block;
+            font-size: 0.65rem;
+            opacity: 0.6;
+            margin-top: 3px;
+        }
+        
+        .timeline-bar-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .timeline-bar {
+            display: flex;
+            flex: 1;
+            height: 45px;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .timeline-segment {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 35px;
+            transition: transform 0.3s, filter 0.3s;
+            cursor: pointer;
+            border-right: 2px solid rgba(0,0,0,0.2);
+        }
+        
+        .timeline-segment:last-child {
+            border-right: none;
+        }
+        
+        .timeline-segment:hover {
+            transform: scaleY(1.15);
+            filter: brightness(1.2);
+            z-index: 10;
+        }
+        
+        .segment-days {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.25);
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+        
+        .timeline-arrow-head {
+            width: 0;
+            height: 0;
+            border-top: 22px solid transparent;
+            border-bottom: 22px solid transparent;
+            border-left: 30px solid #43e97b;
+            margin-left: -2px;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Intro slide */
+        .intro-slide {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+        }
+
+        .intro-title {
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #f093fb, #f5576c, #667eea, #4facfe);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientMove 5s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .intro-subtitle {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .year {
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 900;
+            color: rgba(255,255,255,0.1);
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .nav button:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.05);
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f093fb, #f5576c, #667eea);
+            z-index: 1000;
+            transition: width 0.3s;
+        }
+
+        /* Audio controls */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .audio-control:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.1);
+        }
+
+        /* Confetti effect */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f00;
+            top: -10px;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+
+        /* Summary slide special */
+        .summary-content {
+            background: rgba(0,0,0,0.3);
+            padding: 40px;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        .summary-stats {
+            white-space: pre-line;
+            font-size: 1.3rem;
+            line-height: 2;
+        }
+
+        /* Responsive - Tablets */
+        @media (max-width: 768px) {
+            .slide-content {
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .icon {
+                font-size: 4rem;
+            }
+            
+            .nav {
+                bottom: 15px;
+            }
+            
+            .nav button {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+
+            .top-list li {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+            
+            .winner {
+                font-size: 2rem;
+            }
+            
+            .extra-info {
+                font-size: 1rem;
+            }
+            
+            .fun-fact {
+                font-size: 0.85rem;
+                padding: 8px 15px;
+            }
+        }
+        
+        /* Responsive - Mobile phones */
+        @media (max-width: 480px) {
+            .slide-content {
+                padding: 15px;
+            }
+            
+            .title {
+                font-size: 1.4rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .icon {
+                font-size: 3rem;
+            }
+            
+            .nav {
+                bottom: 10px;
+                gap: 10px;
+            }
+            
+            .nav button {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .top-list li {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+                flex-wrap: wrap;
+            }
+            
+            .top-list .name {
+                flex: 1 1 60%;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .top-list .score {
+                flex: 0 0 auto;
+                font-size: 0.8rem;
+            }
+            
+            .winner {
+                font-size: 1.5rem;
+            }
+            
+            .extra-info {
+                font-size: 0.9rem;
+            }
+            
+            .fun-fact {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+                word-break: break-word;
+            }
+            
+            .start-overlay h1 {
+                font-size: 2rem !important;
+            }
+            
+            .start-overlay .start-emoji {
+                font-size: 4rem !important;
+            }
+            
+            .tap-hint {
+                font-size: 0.85rem;
+            }
+            
+            /* Timeline mobile */
+            .timeline-container {
+                padding: 10px;
+            }
+            
+            .timeline-item {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Very small phones */
+        @media (max-width: 360px) {
+            .title {
+                font-size: 1.2rem;
+            }
+            
+            .top-list li {
+                padding: 6px 10px;
+            }
+            
+            .nav button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Start overlay */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            cursor: pointer;
+        }
+
+        .start-overlay.hidden {
+            display: none;
+        }
+        
+        /* Suspense / Reveal phases */
+        .teaser-phase {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .teaser-icon {
+            animation: pulse 1.5s infinite, bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .suspense-dots {
+            font-size: 4rem;
+            margin: 30px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .suspense-dots span {
+            animation: dotPulse 1.5s infinite;
+            opacity: 0.3;
+        }
+        
+        .suspense-dots span:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .suspense-dots span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+        
+        .tap-hint {
+            font-size: 1.1rem;
+            opacity: 0.6;
+            margin-top: 20px;
+            animation: fadeInOut 2s infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        
+        .reveal-phase {
+            animation: revealSlide 0.6s ease;
+        }
+        
+        .reveal-phase.hidden {
+            display: none;
+        }
+        
+        @keyframes revealSlide {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .start-btn {
+            padding: 25px 60px;
+            font-size: 2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+            box-shadow: 0 10px 40px rgba(240, 147, 251, 0.4);
+            transition: all 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 50px rgba(240, 147, 251, 0.6);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .start-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        .start-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #f093fb, #f5576c, #667eea, #4facfe);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientMove 5s ease infinite;
+        }
+
+        .start-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="start-overlay" id="startOverlay" onclick="startPresentation()">
+        <div class="start-icon">🎉</div>
+        <h1 class="start-title">WRAPPED 2025</h1>
+        <p class="start-subtitle">Młodzi Waginierzy</p>
+        <button class="start-btn">🎵 Start z muzyką</button>
+    </div>
+
+    <div class="progress" id="progress"></div>
+    <button class="audio-control" id="audioControl" onclick="toggleAudio()">🔇</button>
+
+    <div class="container" id="slideContainer">
+        <!-- Intro Slide -->
+        <div class="slide intro-slide" data-category="intro" data-no-suspense="true">
+            <div class="slide-content">
+                <div class="icon">🎉</div>
+                <h1 class="intro-title">WRAPPED</h1>
+                <p class="intro-subtitle">Młodzi Waginierzy</p>
+                <p class="subtitle" style="margin-top: 30px;">
+                    64,291 wiadomości • 8 uczestników<br>
+                    28.12.2024 - 28.12.2025
+                </p>
+            </div>
+            <div class="year">2025</div>
+        </div>
+
+        
+        <div class="slide" data-category="night_owl">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🌙</span>
+                    <h2 class="title">🦉 Nocny Marek</h2>
+                    <p class="subtitle">Najwięcej wiadomości w nocy (00:00 - 05:00)</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🌙</span>
+                    <h2 class="title">🦉 Nocny Marek</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">1586 wiadomości</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">881 wiadomości</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">548 wiadomości</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Kiedy inni śpią, oni piszą!</p>
+                    <p class="fun-fact">Łącznie wysłano 3999 nocnych wiadomości (6% wszystkich)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="busiest_day">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">📅</span>
+                    <h2 class="title">🔥 Dzień Apokalipsy</h2>
+                    <p class="subtitle">Najbardziej intensywny dzień w historii grupy</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">📅</span>
+                    <h2 class="title">🔥 Dzień Apokalipsy</h2>
+                    <p class="winner">26 grudnia 2025</p>
+                    <p class="value">1449</p>
+                    <p class="extra-info">1449 wiadomości w jeden dzień!</p>
+                    <p class="fun-fact">To średnio 1 wiadomość co 59 sekund!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="prodigal_son">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">👋</span>
+                    <h2 class="title">🚪 Syn Marnotrawny</h2>
+                    <p class="subtitle">Powrót po najdłuższej przerwie</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">👋</span>
+                    <h2 class="title">🚪 Syn Marnotrawny</h2>
+                    <p class="winner">Łukasz Świdziniewski</p>
+                    <p class="value">9</p>
+                    <p class="extra-info">Zniknął na 9 dni!</p>
+                    <p class="fun-fact">Wrócił 18 listopada 2025</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="spam_king">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">💬</span>
+                    <h2 class="title">👑 Król Spamu</h2>
+                    <p class="subtitle">Najwięcej wiadomości ogółem</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">💬</span>
+                    <h2 class="title">👑 Król Spamu</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">23973 (37%)</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">21756 (33%)</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Kamil Gwóźdź</span>
+                        <span class="score">5449 (8%)</span>
+                    </li>
+                    <li>
+                        <span class="rank">4️⃣</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">4306 (6%)</span>
+                    </li>
+                    <li>
+                        <span class="rank">5️⃣</span>
+                        <span class="name">Łukasz Świdziniewski</span>
+                        <span class="score">2571 (3%)</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">23973 wiadomości!</p>
+                    <p class="fun-fact">To 37% wszystkich wiadomości</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="typing_machine">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🔄</span>
+                    <h2 class="title">⌨️ Maszyna do Pisania</h2>
+                    <p class="subtitle">Najdłuższy ciąg wiadomości pod rząd</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🔄</span>
+                    <h2 class="title">⌨️ Maszyna do Pisania</h2>
+                    <p class="winner">Tomasz Gałgański</p>
+                    <p class="value">122</p>
+                    <p class="extra-info">122 wiadomości pod rząd!</p>
+                    <p class="fun-fact">Rozmowa z samym sobą level: ekspert</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="poet">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">✍️</span>
+                    <h2 class="title">📜 Poeta</h2>
+                    <p class="subtitle">Najdłuższa pojedyncza wiadomość</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">✍️</span>
+                    <h2 class="title">📜 Poeta</h2>
+                    <p class="winner">Jędrzej Maskiewicz</p>
+                    <p class="value">3074</p>
+                    <p class="extra-info">3074 znaków!</p>
+                    <p class="fun-fact">Fragment: "White demographic decline is at the core of the rise of right wing populism across the Western world..."</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="dictionary">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🔤</span>
+                    <h2 class="title">📚 Słownik Grupy</h2>
+                    <p class="subtitle">Najczęściej używane rzeczowniki</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🔤</span>
+                    <h2 class="title">📚 Słownik Grupy</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">ludzie</span>
+                        <span class="score">335x</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">dzieci</span>
+                        <span class="score">173x</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">typ</span>
+                        <span class="score">170x</span>
+                    </li>
+                    <li>
+                        <span class="rank">4️⃣</span>
+                        <span class="name">problem</span>
+                        <span class="score">151x</span>
+                    </li>
+                    <li>
+                        <span class="rank">5️⃣</span>
+                        <span class="name">czas</span>
+                        <span class="score">148x</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">"ludzie" - 335 razy!</p>
+                    <p class="fun-fact">📊 Algorytm: filtrujemy tylko rzeczowniki (po końcówkach i słowniku)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="ghost">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🔇</span>
+                    <h2 class="title">👻 Duch</h2>
+                    <p class="subtitle">Najmniej aktywny uczestnik</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🔇</span>
+                    <h2 class="title">👻 Duch</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jakub Reszke</span>
+                        <span class="score">1839 wiadomości</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Wiktor Morawski</span>
+                        <span class="score">2191 wiadomości</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Grzegorz Szot</span>
+                        <span class="score">2206 wiadomości</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Cisza to też odpowiedź!</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="starter">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">▶️</span>
+                    <h2 class="title">🎬 Reżyser</h2>
+                    <p class="subtitle">Najczęściej zaczyna rozmowy</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">▶️</span>
+                    <h2 class="title">🎬 Reżyser</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">133x</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">85x</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">52x</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Zawsze ma temat do rozmowy!</p>
+                    <p class="fun-fact">📊 Algorytm: pierwsza wiadomość po 4+ godzinach ciszy = nowa rozmowa</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="closer">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">⏹️</span>
+                    <h2 class="title">🚪 Zamykacz</h2>
+                    <p class="subtitle">Najczęściej kończy rozmowy</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">⏹️</span>
+                    <h2 class="title">🚪 Zamykacz</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">182x</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">95x</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">73x</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Ostatnie słowo zawsze należy do niego!</p>
+                    <p class="fun-fact">📊 Algorytm: ostatnia wiadomość przed 4+ godzinami ciszy = koniec rozmowy</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="reactor">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">👍</span>
+                    <h2 class="title">❤️ Reakcjonista</h2>
+                    <p class="subtitle">Rozdał najwięcej reakcji</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">👍</span>
+                    <h2 class="title">❤️ Reakcjonista</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">11120 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Jakub Reszke</span>
+                        <span class="score">6670 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">4521 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">4️⃣</span>
+                        <span class="name">Grzegorz Szot</span>
+                        <span class="score">3215 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">5️⃣</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">2847 reakcji</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Serce grupy!</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="celebrity">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🌟</span>
+                    <h2 class="title">⭐ Celebryta</h2>
+                    <p class="subtitle">Otrzymał najwięcej reakcji</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🌟</span>
+                    <h2 class="title">⭐ Celebryta</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">11151 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">8696 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">2380 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">4️⃣</span>
+                        <span class="name">Łukasz Świdziniewski</span>
+                        <span class="score">2270 reakcji</span>
+                    </li>
+                    <li>
+                        <span class="rank">5️⃣</span>
+                        <span class="name">Kamil Gwóźdź</span>
+                        <span class="score">2124 reakcji</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Gwiazda grupy!</p>
+                    <p class="fun-fact">📊 Algorytm: suma wszystkich reakcji otrzymanych na wiadomości</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="viral_message">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🙌</span>
+                    <h2 class="title">💥 Viral</h2>
+                    <p class="subtitle">Wiadomość z największą ilością reakcji</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🙌</span>
+                    <h2 class="title">💥 Viral</h2>
+                    <p class="winner">Wiktor Morawski</p>
+                    <p class="value">6</p>
+                    <p class="extra-info">"@Grzegorz Szot widzę ze już masz ghostwriterow na X"</p>
+                    <p class="fun-fact">Reakcje: 😆 😆 😆 😆 😆 😆</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="paparazzo">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">📁</span>
+                    <h2 class="title">🖼️ Galernik</h2>
+                    <p class="subtitle">Wysłał najwięcej obrazków</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">📁</span>
+                    <h2 class="title">🖼️ Galernik</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">4563 obrazków</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">4427 obrazków</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">385 obrazków</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Memy, zdjęcia, screenshoty - wszystko się liczy!</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="comedian">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">😂</span>
+                    <h2 class="title">🤡 Śmieszek</h2>
+                    <p class="subtitle">Wysłał najwięcej GIFów i naklejek</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">😂</span>
+                    <h2 class="title">🤡 Śmieszek</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">387</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">153</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Grzegorz Szot</span>
+                        <span class="score">92</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">GIF wart więcej niż 1000 słów!</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="detective">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">❓</span>
+                    <h2 class="title">🔍 Detektyw</h2>
+                    <p class="subtitle">Zadał najwięcej pytań</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">❓</span>
+                    <h2 class="title">🔍 Detektyw</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">2106 pytań</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">967 pytań</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">767 pytań</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Ciekawość to pierwszy stopień do piekła... wiedzy!</p>
+                    <p class="fun-fact">📊 Algorytm: zliczamy wiadomości zawierające znak zapytania (?)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="link_maniac">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🌐</span>
+                    <h2 class="title">🔗 Linkomaniak</h2>
+                    <p class="subtitle">Udostępnił najwięcej linków</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🌐</span>
+                    <h2 class="title">🔗 Linkomaniak</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">913 linków</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">860 linków</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">585 linków</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Internet w pigułce!</p>
+                    <p class="fun-fact">🌐 Top domeny: youtube.com(574) | youtu.be(500) | facebook.com(460) | x.com(419) | instagram.com(89)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="emoji_king">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🎭</span>
+                    <h2 class="title">😎 Emoji Master</h2>
+                    <p class="subtitle">Używa najwięcej emoji</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🎭</span>
+                    <h2 class="title">😎 Emoji Master</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">656 emoji</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">148 emoji</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Jędrzej Maskiewicz</span>
+                        <span class="score">131 emoji</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Obrazek wart więcej niż słowa!</p>
+                    <p class="fun-fact">Ulubione emoji: 🗿(199x) 💀(65x) ☝️(26x)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="writer">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">📖</span>
+                    <h2 class="title">📝 Pisarz</h2>
+                    <p class="subtitle">Najdłuższe średnie wiadomości</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">📖</span>
+                    <h2 class="title">📝 Pisarz</h2>
+                    <ul class="top-list">
+                        
+                    <li>
+                        <span class="rank">🥇</span>
+                        <span class="name">Tomasz Gałgański</span>
+                        <span class="score">śr. 78 znaków</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥈</span>
+                        <span class="name">Jakub Reszke</span>
+                        <span class="score">śr. 64 znaków</span>
+                    </li>
+                    <li>
+                        <span class="rank">🥉</span>
+                        <span class="name">Adam Ginna</span>
+                        <span class="score">śr. 43 znaków</span>
+                    </li>
+                    </ul>
+                    <p class="extra-info">Jakość ponad ilość!</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="peak_hour">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🕐</span>
+                    <h2 class="title">⏰ Godzina Szczytu</h2>
+                    <p class="subtitle">Najbardziej aktywna pora dnia</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🕐</span>
+                    <h2 class="title">⏰ Godzina Szczytu</h2>
+                    <p class="winner">11:00 - 12:00</p>
+                    <p class="value">4986</p>
+                    <p class="extra-info">4986 wiadomości o tej porze!</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-category="group_identity">
+            <div class="slide-content timeline-slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">🎨</span>
+                    <h2 class="title">🎭 Metamorfozy</h2>
+                    <p class="subtitle">Historia nazw grupy</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">🎨</span>
+                    <h2 class="title">🎭 Metamorfozy</h2>
+                    <div class="horizontal-timeline-wrapper">
+                        <div class="timeline-names-row">
+                            
+                    <div class="timeline-name-entry" style="flex: 38;">
+                        <div class="name-bubble" style="border-color: #f093fb; background: linear-gradient(135deg, #f093fb22, #f093fb11);">
+                            <span class="name-text">Gym gay club</span>
+                            <span class="name-date">14 sty</span>
+                        </div>
+                        <div class="name-connector" style="background: #f093fb;"></div>
+                    </div>
+                    <div class="timeline-name-entry" style="flex: 71;">
+                        <div class="name-bubble" style="border-color: #667eea; background: linear-gradient(135deg, #667eea22, #667eea11);">
+                            <span class="name-text">27 suicide club</span>
+                            <span class="name-date">21 lut</span>
+                        </div>
+                        <div class="name-connector" style="background: #667eea;"></div>
+                    </div>
+                    <div class="timeline-name-entry" style="flex: 1;">
+                        <div class="name-bubble" style="border-color: #4facfe; background: linear-gradient(135deg, #4facfe22, #4facfe11);">
+                            <span class="name-text">Szmoncić club</span>
+                            <span class="name-date">4 maj</span>
+                        </div>
+                        <div class="name-connector" style="background: #4facfe;"></div>
+                    </div>
+                    <div class="timeline-name-entry" style="flex: 227;">
+                        <div class="name-bubble" style="border-color: #43e97b; background: linear-gradient(135deg, #43e97b22, #43e97b11);">
+                            <span class="name-text">Szmącić club</span>
+                            <span class="name-date">5 maj</span>
+                        </div>
+                        <div class="name-connector" style="background: #43e97b;"></div>
+                    </div>
+                    <div class="timeline-name-entry" style="flex: 4;">
+                        <div class="name-bubble" style="border-color: #f5576c; background: linear-gradient(135deg, #f5576c22, #f5576c11);">
+                            <span class="name-text">ANTYCZNI NAPALEŃCY</span>
+                            <span class="name-date">18 gru</span>
+                        </div>
+                        <div class="name-connector" style="background: #f5576c;"></div>
+                    </div>
+                    <div class="timeline-name-entry" style="flex: 4;">
+                        <div class="name-bubble" style="border-color: #ffd700; background: linear-gradient(135deg, #ffd70022, #ffd70011);">
+                            <span class="name-text">Młodzi Waginierzy</span>
+                            <span class="name-date">23 gru</span>
+                        </div>
+                        <div class="name-connector" style="background: #ffd700;"></div>
+                    </div>
+                        </div>
+                        <div class="timeline-bar-container">
+                            <div class="timeline-bar">
+                                
+                    <div class="timeline-segment" style="flex: 38; background: #f093fb;" title="Gym gay club (38 dni)">
+                        <span class="segment-days">38d</span>
+                    </div>
+                    <div class="timeline-segment" style="flex: 71; background: #667eea;" title="27 suicide club (71 dni)">
+                        <span class="segment-days">71d</span>
+                    </div>
+                    <div class="timeline-segment" style="flex: 1; background: #4facfe;" title="Szmoncić club (1 dni)">
+                        <span class="segment-days">1d</span>
+                    </div>
+                    <div class="timeline-segment" style="flex: 227; background: #43e97b;" title="Szmącić club (227 dni)">
+                        <span class="segment-days">227d</span>
+                    </div>
+                    <div class="timeline-segment" style="flex: 4; background: #f5576c;" title="ANTYCZNI NAPALEŃCY (4 dni)">
+                        <span class="segment-days">4d</span>
+                    </div>
+                    <div class="timeline-segment" style="flex: 4; background: #ffd700;" title="Młodzi Waginierzy (4 dni)">
+                        <span class="segment-days">4d</span>
+                    </div>
+                            </div>
+                            <div class="timeline-arrow-head"></div>
+                        </div>
+                    </div>
+                    <p class="extra-info">6 zmian nazwy, 7 zmian zdjęcia</p>
+                    <p class="fun-fact">Najdłuższa nazwa: 227 dni</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide intro-slide" data-category="summary" data-no-suspense="true">
+            <div class="slide-content summary-content">
+                <span class="icon">📈</span>
+                <h2 class="title">📊 Podsumowanie</h2>
+                <p class="subtitle">Statystyki grupy Młodzi Waginierzy</p>
+                <p class="summary-stats">
+        📨 Łącznie wiadomości: 64,291
+        👥 Uczestników: 8
+        📅 Dni aktywności: 365
+        📊 Średnio dziennie: 176.1
+        </p>
+                <p class="fun-fact">Od 28.12.2024 do 28.12.2025</p>
+                <p class="extra-info" style="margin-top: 30px;">🎉 Dzięki za wspólny rok! 🎉</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav">
+        <button class="nav-btn" onclick="prevSlide()">← Poprzedni</button>
+        <button class="nav-btn" onclick="nextSlide()">Następny →</button>
+    </nav>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let isPlaying = false;
+        const audioBtn = document.getElementById('audioControl');
+        
+        // Background music using Web Audio API
+        let bgMusicContext = null;
+        let bgMusicGain = null;
+        let bgMusicPlaying = false;
+        let bgMusicInterval = null;
+        
+        function startBackgroundMusic() {
+            if (bgMusicPlaying) return;
+            bgMusicContext = new (window.AudioContext || window.webkitAudioContext)();
+            bgMusicGain = bgMusicContext.createGain();
+            bgMusicGain.connect(bgMusicContext.destination);
+            bgMusicGain.gain.value = 0.08;
+            bgMusicPlaying = true;
+            
+            // Ambient looping melody pattern
+            const chords = [
+                [261, 329, 392], // C major
+                [293, 369, 440], // D minor  
+                [349, 440, 523], // F major
+                [392, 494, 587], // G major
+            ];
+            
+            let chordIndex = 0;
+            
+            function playBackgroundChord() {
+                if (!bgMusicPlaying) return;
+                const chord = chords[chordIndex % chords.length];
+                chord.forEach(freq => {
+                    const osc = bgMusicContext.createOscillator();
+                    const gain = bgMusicContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(bgMusicGain);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, bgMusicContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, bgMusicContext.currentTime + 1.8);
+                    osc.start();
+                    osc.stop(bgMusicContext.currentTime + 2);
+                });
+                chordIndex++;
+            }
+            
+            playBackgroundChord();
+            bgMusicInterval = setInterval(playBackgroundChord, 2000);
+        }
+        
+        function stopBackgroundMusic() {
+            bgMusicPlaying = false;
+            if (bgMusicInterval) {
+                clearInterval(bgMusicInterval);
+                bgMusicInterval = null;
+            }
+            if (bgMusicGain) {
+                bgMusicGain.gain.value = 0;
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+        
+        // Track which slides have been revealed
+        const revealedSlides = new Set();
+        
+        function isSlideRevealed(index) {
+            return revealedSlides.has(index);
+        }
+        
+        function revealCurrentSlide() {
+            const slide = slides[currentSlide];
+            const teaser = slide.querySelector('.teaser-phase');
+            const reveal = slide.querySelector('.reveal-phase');
+            
+            // Check if this slide has suspense phases
+            if (!teaser || !reveal) return false;
+            
+            // Check if already revealed
+            if (isSlideRevealed(currentSlide)) return false;
+            
+            // Hide teaser, show reveal
+            teaser.style.display = 'none';
+            reveal.classList.remove('hidden');
+            revealedSlides.add(currentSlide);
+            
+            // Play reveal sound
+            const melodyFn = getCategorySound(currentSlide);
+            if (melodyFn) melodyFn();
+            
+            return true;
+        }
+        
+        function resetSlidePhases(index) {
+            const slide = slides[index];
+            const teaser = slide.querySelector('.teaser-phase');
+            const reveal = slide.querySelector('.reveal-phase');
+            
+            if (teaser && reveal && !isSlideRevealed(index)) {
+                teaser.style.display = 'flex';
+                reveal.classList.add('hidden');
+            }
+        }
+
+        function showSlide(index) {
+            if (index < 0) index = 0;
+            if (index >= totalSlides) index = totalSlides - 1;
+            
+            const oldSlide = currentSlide;
+            currentSlide = index;
+            slides.forEach((slide, i) => {
+                slide.style.display = i === currentSlide ? 'flex' : 'none';
+            });
+            
+            updateProgress();
+            
+            // Reset phases for this slide if not revealed
+            resetSlidePhases(currentSlide);
+            
+            // For slides without suspense (intro, summary), play sound directly
+            const slide = slides[currentSlide];
+            const noSuspense = slide.getAttribute('data-no-suspense') === 'true';
+            const hasSuspense = slide.querySelector('.teaser-phase') !== null;
+            
+            if (oldSlide !== currentSlide && (!hasSuspense || isSlideRevealed(currentSlide) || noSuspense)) {
+                const melodyFn = getCategorySound(currentSlide);
+                if (melodyFn) melodyFn();
+            }
+            
+            // Trigger confetti on last slide
+            if (currentSlide === totalSlides - 1) {
+                createConfetti();
+                categoryMelodies['summary']();
+            }
+        }
+        
+        // Handle click/tap on slide to reveal
+        document.getElementById('slideContainer').addEventListener('click', (e) => {
+            // Don't trigger on navigation buttons
+            if (e.target.closest('.nav-btn') || e.target.closest('.audio-control')) return;
+            
+            const slide = slides[currentSlide];
+            const teaser = slide.querySelector('.teaser-phase');
+            
+            // If slide has teaser and not revealed, reveal it
+            if (teaser && teaser.style.display !== 'none' && !isSlideRevealed(currentSlide)) {
+                revealCurrentSlide();
+            }
+        });
+
+        function nextSlide() {
+            // If current slide has unrevealed teaser, reveal first
+            const slide = slides[currentSlide];
+            const teaser = slide.querySelector('.teaser-phase');
+            if (teaser && teaser.style.display !== 'none' && !isSlideRevealed(currentSlide)) {
+                revealCurrentSlide();
+                return;
+            }
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function toggleAudio() {
+            if (isPlaying) {
+                stopBackgroundMusic();
+                audioBtn.textContent = '🔇';
+                isPlaying = false;
+            } else {
+                startBackgroundMusic();
+                audioBtn.textContent = '🔊';
+                isPlaying = true;
+            }
+        }
+
+        function startPresentation() {
+            document.getElementById('startOverlay').classList.add('hidden');
+            // Start background music
+            startBackgroundMusic();
+            audioBtn.textContent = '🔊';
+            isPlaying = true;
+            // Resume audio context for sound effects
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#f093fb', '#f5576c', '#667eea', '#4facfe', '#43e97b', '#ffd700'];
+            
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 50);
+            }
+        }
+
+        // Sound effects using Web Audio API - unique melody for each category
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playMelody(notes, waveType = 'sine', noteDuration = 0.15, noteGap = 0.1) {
+            if (!isPlaying) return;
+            notes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = waveType;
+                osc.frequency.value = freq;
+                const startTime = audioContext.currentTime + i * noteGap;
+                gain.gain.setValueAtTime(0.12, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + noteDuration);
+                osc.start(startTime);
+                osc.stop(startTime + noteDuration);
+            });
+        }
+        
+        // Unique melodies for each category
+        const categoryMelodies = {
+            // 🦉 Nocny Marek - mysterious owl hoot descending
+            'night_owl': () => playMelody([880, 660, 440, 330], 'sine', 0.2, 0.15),
+            
+            // 🔥 Dzień Apokalipsy - intense rising alarm
+            'busiest_day': () => playMelody([200, 300, 400, 500, 600, 800], 'sawtooth', 0.08, 0.06),
+            
+            // 🚪 Syn Marnotrawny - welcome back fanfare
+            'prodigal_son': () => playMelody([392, 494, 588, 784], 'triangle', 0.25, 0.2),
+            
+            // 👑 Król Spamu - royal trumpets
+            'spam_king': () => playMelody([523, 523, 659, 784, 659, 784, 1047], 'triangle', 0.18, 0.12),
+            
+            // ⌨️ Maszyna do Pisania - typewriter clicks
+            'typing_machine': () => {
+                [0, 50, 100, 150, 200, 250].forEach(delay => {
+                    setTimeout(() => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'square';
+                        osc.frequency.value = 1200 + Math.random() * 400;
+                        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.03);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.03);
+                    }, delay);
+                });
+            },
+            
+            // 📜 Poeta - elegant harp arpeggio
+            'poet': () => playMelody([523, 659, 784, 988, 1175, 1319], 'sine', 0.3, 0.1),
+            
+            // 📚 Słownik - book page flip sounds
+            'dictionary': () => playMelody([2000, 1800, 2200, 1600, 2400], 'sine', 0.05, 0.08),
+            
+            // 👻 Duch - spooky ghost whoosh
+            'ghost': () => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.5);
+            },
+            
+            // 🎬 Reżyser - movie clapper
+            'starter': () => playMelody([800, 1000, 800, 1200], 'square', 0.05, 0.08),
+            
+            // 🚪 Zamykacz - door closing thud
+            'closer': () => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.3);
+            },
+            
+            // ❤️ Reakcjonista - heart beating
+            'reactor': () => {
+                [0, 200, 600, 800].forEach((delay, i) => {
+                    setTimeout(() => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = i % 2 === 0 ? 80 : 100;
+                        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.15);
+                    }, delay);
+                });
+            },
+            
+            // ⭐ Celebryta - star twinkle
+            'celebrity': () => playMelody([1568, 1760, 1976, 2093, 1760, 2349], 'sine', 0.12, 0.08),
+            
+            // 💥 Viral - explosion boom
+            'viral_message': () => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioContext.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.25, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.5);
+                // Add high crackle
+                setTimeout(() => playMelody([3000, 2500, 3500, 2000], 'square', 0.03, 0.02), 50);
+            },
+            
+            // 📸 Paparazzo - camera shutter
+            'paparazzo': () => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'square';
+                osc.frequency.value = 4000;
+                gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.02);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.02);
+                setTimeout(() => {
+                    const osc2 = audioContext.createOscillator();
+                    const gain2 = audioContext.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContext.destination);
+                    osc2.type = 'square';
+                    osc2.frequency.value = 3000;
+                    gain2.gain.setValueAtTime(0.08, audioContext.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.03);
+                    osc2.start();
+                    osc2.stop(audioContext.currentTime + 0.03);
+                }, 80);
+            },
+            
+            // 🤡 Śmieszek - funny bouncy sound
+            'comedian': () => playMelody([300, 500, 400, 600, 350, 700], 'triangle', 0.1, 0.07),
+            
+            // 🔍 Detektyw - investigation reveal
+            'detective': () => playMelody([220, 277, 330, 440], 'triangle', 0.2, 0.18),
+            
+            // 🔗 Linkomaniak - digital connection beeps
+            'link_maniac': () => playMelody([1047, 1319, 1047, 1568, 1319], 'square', 0.08, 0.1),
+            
+            // 😎 Emoji Master - playful ascending
+            'emoji_king': () => playMelody([392, 440, 494, 523, 587, 659, 698, 784], 'sine', 0.08, 0.06),
+            
+            // 📝 Pisarz - pen writing scratch
+            'writer': () => {
+                [0, 80, 160, 280, 350].forEach(delay => {
+                    setTimeout(() => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sawtooth';
+                        osc.frequency.value = 800 + Math.random() * 600;
+                        gain.gain.setValueAtTime(0.04, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.06);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.06);
+                    }, delay);
+                });
+            },
+            
+            // ⏰ Godzina Szczytu - clock ticking then alarm
+            'peak_hour': () => {
+                [0, 150, 300].forEach(delay => {
+                    setTimeout(() => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = 1000;
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.05);
+                    }, delay);
+                });
+                setTimeout(() => playMelody([880, 880, 1100, 880], 'triangle', 0.15, 0.1), 450);
+            },
+            
+            // 🎭 Metamorfozy - theatrical transformation sound
+            'group_identity': () => {
+                // Mysterious rising transformation
+                playMelody([220, 330, 440, 550, 660, 880], 'sine', 0.15, 0.12);
+                setTimeout(() => {
+                    playMelody([440, 523, 659, 784], 'triangle', 0.2, 0.1);
+                }, 700);
+            },
+            
+            // 📊 Podsumowanie - grand finale fanfare
+            'summary': () => {
+                playMelody([523, 659, 784, 1047, 1319, 1568], 'triangle', 0.25, 0.12);
+                setTimeout(() => playMelody([784, 988, 1175, 1568], 'sine', 0.4, 0.15), 600);
+            },
+            
+            // Default intro sound
+            'intro': () => playMelody([440, 554, 659, 880], 'sine', 0.2, 0.15)
+        };
+        
+        function getCategorySound(slideIndex) {
+            const slide = slides[slideIndex];
+            const categoryId = slide.getAttribute('data-category');
+            return categoryMelodies[categoryId] || categoryMelodies['intro'];
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const threshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > threshold) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+        updateProgress();
+    </script>
+</body>
+</html>

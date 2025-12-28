@@ -11,8 +11,12 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
     <title>{result.conversation_title} - Wrapped 2025</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * {{
@@ -485,8 +489,20 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             line-height: 2;
         }}
 
-        /* Responsive */
+        /* Responsive - Tablets */
         @media (max-width: 768px) {{
+            .slide-content {{
+                padding: 20px;
+            }}
+            
+            .title {{
+                font-size: 1.8rem;
+            }}
+            
+            .icon {{
+                font-size: 4rem;
+            }}
+            
             .nav {{
                 bottom: 15px;
             }}
@@ -499,6 +515,117 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             .top-list li {{
                 font-size: 1rem;
                 padding: 10px 15px;
+            }}
+            
+            .winner {{
+                font-size: 2rem;
+            }}
+            
+            .extra-info {{
+                font-size: 1rem;
+            }}
+            
+            .fun-fact {{
+                font-size: 0.85rem;
+                padding: 8px 15px;
+            }}
+        }}
+        
+        /* Responsive - Mobile phones */
+        @media (max-width: 480px) {{
+            .slide-content {{
+                padding: 15px;
+            }}
+            
+            .title {{
+                font-size: 1.4rem;
+            }}
+            
+            .subtitle {{
+                font-size: 0.9rem;
+            }}
+            
+            .icon {{
+                font-size: 3rem;
+            }}
+            
+            .nav {{
+                bottom: 10px;
+                gap: 10px;
+            }}
+            
+            .nav button {{
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }}
+
+            .top-list li {{
+                font-size: 0.9rem;
+                padding: 8px 12px;
+                flex-wrap: wrap;
+            }}
+            
+            .top-list .name {{
+                flex: 1 1 60%;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }}
+            
+            .top-list .score {{
+                flex: 0 0 auto;
+                font-size: 0.8rem;
+            }}
+            
+            .winner {{
+                font-size: 1.5rem;
+            }}
+            
+            .extra-info {{
+                font-size: 0.9rem;
+            }}
+            
+            .fun-fact {{
+                font-size: 0.75rem;
+                padding: 6px 12px;
+                word-break: break-word;
+            }}
+            
+            .start-overlay h1 {{
+                font-size: 2rem !important;
+            }}
+            
+            .start-overlay .start-emoji {{
+                font-size: 4rem !important;
+            }}
+            
+            .tap-hint {{
+                font-size: 0.85rem;
+            }}
+            
+            /* Timeline mobile */
+            .timeline-container {{
+                padding: 10px;
+            }}
+            
+            .timeline-item {{
+                font-size: 0.75rem;
+            }}
+        }}
+        
+        /* Very small phones */
+        @media (max-width: 360px) {{
+            .title {{
+                font-size: 1.2rem;
+            }}
+            
+            .top-list li {{
+                padding: 6px 10px;
+            }}
+            
+            .nav button {{
+                padding: 6px 12px;
+                font-size: 0.8rem;
             }}
         }}
 

@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from typing import Any
+from urllib.parse import urlparse
 import re
 
 from .parser import Conversation, Message
@@ -240,6 +241,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     stickers_per_person: Counter[str] = Counter()
     gifs_per_person: Counter[str] = Counter()
     links_per_person: Counter[str] = Counter()
+    domains_counter: Counter[str] = Counter()  # Track domains
     questions_per_person: Counter[str] = Counter()
     conversation_starters: Counter[str] = Counter()
     conversation_enders: Counter[str] = Counter()
@@ -296,9 +298,20 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             if '?' in msg.content:
                 questions_per_person[sender] += 1
             
-            # Links
-            if 'http' in msg.content.lower():
-                links_per_person[sender] += 1
+            # Links and domains
+            urls = re.findall(r'https?://[^\s<>"]+', msg.content)
+            if urls:
+                links_per_person[sender] += len(urls)
+                for url in urls:
+                    try:
+                        domain = urlparse(url).netloc.lower()
+                        # Clean www. prefix
+                        if domain.startswith('www.'):
+                            domain = domain[4:]
+                        if domain:
+                            domains_counter[domain] += 1
+                    except:
+                        pass
             
             # Emojis
             emojis = emoji_pattern.findall(msg.content)
@@ -625,6 +638,9 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     # 16. Linkomaniak - Most links
     if links_per_person:
         top_linkers = links_per_person.most_common(3)
+        # Get top 5 domains
+        top_domains = domains_counter.most_common(5)
+        domains_str = " | ".join([f"{d}({c})" for d, c in top_domains]) if top_domains else None
         categories.append(CategoryResult(
             category_id="link_maniac",
             title="🔗 Linkomaniak",
@@ -634,6 +650,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             winners=[(name, f"{count} linków") for name, count in top_linkers],
             value=top_linkers[0][1],
             extra_info="Internet w pigułce!",
+            fun_fact=f"🌐 Top domeny: {domains_str}" if domains_str else None,
         ))
     
     # 17. Emoji Królem - Most emojis
