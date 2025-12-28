@@ -230,52 +230,85 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         .timeline-slide-content {{
             max-width: 95vw !important;
             width: 95vw !important;
+            padding-bottom: 80px !important;
         }}
         
         .horizontal-timeline-wrapper {{
             width: 100%;
-            padding: 20px 10px;
-            margin: 30px 0;
+            padding: 10px;
+            margin: 20px 0;
         }}
         
-        .timeline-arrow {{
-            position: relative;
-            width: 100%;
-        }}
-        
-        .timeline-labels {{
+        .timeline-names-row {{
             display: flex;
-            width: calc(100% - 30px);
-            margin-bottom: 8px;
+            width: calc(100% - 35px);
+            margin-bottom: 0;
+            align-items: flex-end;
         }}
         
-        .timeline-label {{
-            text-align: left;
-            padding-left: 5px;
+        .timeline-name-entry {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+            padding: 0 2px;
         }}
         
-        .label-date {{
-            font-size: 0.75rem;
+        .name-connector {{
+            width: 3px;
+            height: 12px;
             opacity: 0.7;
-            white-space: nowrap;
+        }}
+        
+        .name-bubble {{
+            background: rgba(255,255,255,0.1);
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 6px 10px;
+            text-align: center;
+            width: 100%;
+            backdrop-filter: blur(5px);
+            margin-bottom: 0;
+        }}
+        
+        .name-text {{
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.3;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+        }}
+        
+        .name-date {{
+            display: block;
+            font-size: 0.65rem;
+            opacity: 0.6;
+            margin-top: 3px;
+        }}
+        
+        .timeline-bar-container {{
+            display: flex;
+            align-items: center;
+            width: 100%;
         }}
         
         .timeline-bar {{
             display: flex;
-            width: calc(100% - 30px);
-            height: 80px;
-            border-radius: 10px;
+            flex: 1;
+            height: 45px;
+            border-radius: 22px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }}
         
         .timeline-segment {{
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 8px 5px;
-            min-width: 60px;
+            min-width: 35px;
             transition: transform 0.3s, filter 0.3s;
             cursor: pointer;
             border-right: 2px solid rgba(0,0,0,0.2);
@@ -286,40 +319,28 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         }}
         
         .timeline-segment:hover {{
-            transform: scaleY(1.1);
+            transform: scaleY(1.15);
             filter: brightness(1.2);
             z-index: 10;
         }}
         
-        .segment-name {{
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-align: center;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            word-break: break-word;
-            line-height: 1.2;
-        }}
-        
         .segment-days {{
             font-size: 0.7rem;
-            opacity: 0.9;
-            margin-top: 4px;
-            background: rgba(0,0,0,0.2);
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.25);
             padding: 2px 6px;
             border-radius: 8px;
         }}
         
         .timeline-arrow-head {{
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
             width: 0;
             height: 0;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
+            border-top: 22px solid transparent;
+            border-bottom: 22px solid transparent;
             border-left: 30px solid #43e97b;
+            margin-left: -2px;
         }}
         
         @keyframes slideInLeft {{
@@ -1006,25 +1027,26 @@ def generate_slides(categories: list[CategoryResult]) -> str:
     
     for cat in categories:
         if cat.category_id == "group_identity" and cat.winners:
-            # Horizontal timeline with proportional segments
+            # Horizontal timeline with names above the bar
             colors = ['#f093fb', '#667eea', '#4facfe', '#43e97b', '#f5576c', '#ffd700', '#ff6b6b', '#48dbfb']
             timeline_segments = ""
-            timeline_labels = ""
+            timeline_names = ""
             
             for i, entry in enumerate(cat.winners[:8]):  # Max 8 entries
                 color = colors[i % len(colors)]
-                width = min(entry['percentage'], 35)  # Cap at 35% for readability
-                name_short = entry['name'][:20] + ('...' if len(entry['name']) > 20 else '')
                 
                 timeline_segments += f'''
                     <div class="timeline-segment" style="flex: {entry['days']}; background: {color};" title="{entry['name']} ({entry['days']} dni)">
-                        <span class="segment-name">{name_short}</span>
                         <span class="segment-days">{entry['days']}d</span>
                     </div>'''
                 
-                timeline_labels += f'''
-                    <div class="timeline-label" style="flex: {entry['days']};">
-                        <span class="label-date">{entry['date']}</span>
+                timeline_names += f'''
+                    <div class="timeline-name-entry" style="flex: {entry['days']};">
+                        <div class="name-bubble" style="border-color: {color}; background: linear-gradient(135deg, {color}22, {color}11);">
+                            <span class="name-text">{entry['name']}</span>
+                            <span class="name-date">{entry['date']}</span>
+                        </div>
+                        <div class="name-connector" style="background: {color};"></div>
                     </div>'''
             
             slide = f'''
@@ -1034,10 +1056,10 @@ def generate_slides(categories: list[CategoryResult]) -> str:
                 <h2 class="title">{cat.title}</h2>
                 <p class="subtitle">{cat.subtitle}</p>
                 <div class="horizontal-timeline-wrapper">
-                    <div class="timeline-arrow">
-                        <div class="timeline-labels">
-                            {timeline_labels}
-                        </div>
+                    <div class="timeline-names-row">
+                        {timeline_names}
+                    </div>
+                    <div class="timeline-bar-container">
                         <div class="timeline-bar">
                             {timeline_segments}
                         </div>
