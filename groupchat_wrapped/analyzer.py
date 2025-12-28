@@ -252,6 +252,11 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     favorite_emoji_per_person: dict[str, Counter[str]] = defaultdict(Counter)
     most_reacted_message: tuple[Message, int, list[str]] | None = None  # (message, count, reactions)
     
+    # xD tracking
+    xd_per_person: Counter[str] = Counter()
+    longest_xd: tuple[str, str, str] | None = None  # (xd_text, sender, message_content)
+    total_xd_count: int = 0
+    
     # Track group name and photo changes
     name_changes: list[tuple[datetime, str, str]] = []  # (timestamp, who, content)
     photo_changes: list[tuple[datetime, str, str]] = []  # (timestamp, who, action)
@@ -318,6 +323,16 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             emojis_per_person[sender] += len(emojis)
             for emoji in emojis:
                 favorite_emoji_per_person[sender][emoji] += 1
+            
+            # xD analysis - find all xD variants (case insensitive)
+            # Matches patterns like: xd, xD, XD, xdd, XDDD, xDdDdD, xxdd, XXDDD, etc.
+            xd_matches = re.findall(r'[xX]+[dD]+', msg.content)
+            for xd in xd_matches:
+                xd_per_person[sender] += 1
+                total_xd_count += 1
+                # Track the longest xD
+                if longest_xd is None or len(xd) > len(longest_xd[0]):
+                    longest_xd = (xd, sender, msg.content)
         
         # Media types
         if msg.message_type == "photo":
@@ -686,6 +701,24 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             winners=[(name, f"śr. {int(length)} znaków") for name, length in writers],
             value=int(writers[0][1]),
             extra_info="Jakość ponad ilość!",
+        ))
+    
+    # 18b. xD Master - Longest xD and xD stats
+    if xd_per_person and longest_xd:
+        top_xd = xd_per_person.most_common(5)
+        xd_text, xd_sender, xd_message = longest_xd
+        # Truncate the message for display
+        xd_msg_preview = xd_message[:100] + "..." if len(xd_message) > 100 else xd_message
+        categories.append(CategoryResult(
+            category_id="xd_master",
+            title="😂 xD Master",
+            subtitle="Najdłuższe xD w historii grupy",
+            icon="🤣",
+            winner=xd_sender,
+            winners=[(name, f"{count} xD") for name, count in top_xd],
+            value=len(xd_text),
+            extra_info=f"Rekordowe: {xd_text} ({len(xd_text)} znaków)",
+            fun_fact=f"Łącznie {total_xd_count} xD w grupie! 💀"
         ))
     
     # 19. Najbardziej aktywna godzina
