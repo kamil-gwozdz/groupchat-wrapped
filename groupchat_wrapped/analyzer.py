@@ -94,6 +94,74 @@ def get_words(text: str) -> list[str]:
     return [w for w in words if w not in STOPWORDS]
 
 
+# Polish noun suffixes (common endings)
+POLISH_NOUN_SUFFIXES = (
+    # Abstract nouns
+    'ość', 'ość', 'anie', 'enie', 'cie', 'stwo', 'ctwo',
+    # Person nouns
+    'nik', 'arz', 'acz', 'ista', 'owiec', 'anin', 'ak',
+    # Feminine nouns  
+    'ka', 'arka', 'ica', 'ość', 'izna', 'yna',
+    # Diminutives
+    'ek', 'ko', 'eczko', 'ątko',
+    # Other common
+    'acja', 'cja', 'sja', 'zja', 'ura', 'ment', 'ent',
+)
+
+# Common Polish nouns (whitelist of frequently used nouns)
+COMMON_POLISH_NOUNS = {
+    # Places
+    'dom', 'miasto', 'miejsce', 'ulica', 'sklep', 'szkoła', 'praca', 'biuro', 'pokój',
+    'kuchnia', 'łazienka', 'ogród', 'park', 'las', 'góry', 'morze', 'plaża', 'rzeka',
+    # People
+    'człowiek', 'ludzie', 'koleżanka', 'kolega', 'przyjaciel', 'znajomy', 'rodzina',
+    'mama', 'tata', 'brat', 'siostra', 'dziecko', 'dzieci', 'facet', 'gość', 'babka',
+    'dziewczyna', 'chłopak', 'kobieta', 'mężczyzna', 'osoba', 'typ', 'ziomek', 'bro',
+    # Things
+    'rzecz', 'telefon', 'komputer', 'samochód', 'auto', 'rower', 'pociąg', 'autobus',
+    'piwo', 'wino', 'wódka', 'kawa', 'herbata', 'jedzenie', 'obiad', 'śniadanie',
+    'kolacja', 'pizza', 'kebab', 'burger', 'pieniądze', 'kasa', 'hajs', 'forsa',
+    # Abstract
+    'czas', 'dzień', 'noc', 'tydzień', 'miesiąc', 'rok', 'godzina', 'minuta',
+    'problem', 'pytanie', 'odpowiedź', 'pomysł', 'plan', 'sprawa', 'temat', 'rzecz',
+    'życie', 'praca', 'zabawa', 'impreza', 'imba', 'party', 'mecz', 'film', 'serial',
+    'gra', 'muzyka', 'piosenka', 'historia', 'wiadomość', 'info', 'news',
+    # Tech/internet
+    'link', 'zdjęcie', 'foto', 'pic', 'meme', 'mem', 'gif', 'video', 'filmik',
+    'post', 'komentarz', 'lajk', 'reakcja', 'wiadomość', 'czat', 'grupa',
+    # Emotions/states
+    'miłość', 'radość', 'smutek', 'strach', 'stres', 'spokój', 'energia',
+    # Weather
+    'pogoda', 'deszcz', 'słońce', 'śnieg', 'wiatr',
+    # Body
+    'głowa', 'ręka', 'noga', 'oko', 'twarz', 'serce', 'dupa',
+    # Polish slang nouns
+    'spoko', 'git', 'luzik', 'nara', 'hajs', 'sztos', 'bajka', 'akcja',
+}
+
+
+def is_polish_noun(word: str) -> bool:
+    """Check if a word is likely a Polish noun using heuristics."""
+    word_lower = word.lower()
+    
+    # Check whitelist first
+    if word_lower in COMMON_POLISH_NOUNS:
+        return True
+    
+    # Check common noun suffixes
+    for suffix in POLISH_NOUN_SUFFIXES:
+        if word_lower.endswith(suffix) and len(word_lower) > len(suffix) + 1:
+            return True
+    
+    return False
+
+
+def get_nouns(text: str) -> list[str]:
+    """Extract nouns from text using heuristics."""
+    words = get_words(text)
+    return [w for w in words if is_polish_noun(w)]
+
+
 def calculate_streak(messages: list[Message], sender: str) -> int:
     """Calculate the longest streak of consecutive messages by sender."""
     max_streak = 0
@@ -164,7 +232,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     messages_per_person: Counter[str] = Counter()
     night_messages_per_person: Counter[str] = Counter()
     messages_per_day: Counter[str] = Counter()  # date string -> count
-    words_counter: Counter[str] = Counter()
+    nouns_counter: Counter[str] = Counter()
     message_lengths: dict[str, list[int]] = defaultdict(list)
     reactions_received: Counter[str] = Counter()
     reactions_given: Counter[str] = Counter()
@@ -217,9 +285,9 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
         
         # Text analysis
         if msg.message_type == "text" and msg.content:
-            # Words
-            words = get_words(msg.content)
-            words_counter.update(words)
+            # Nouns for Słownik Grupy
+            nouns = get_nouns(msg.content)
+            nouns_counter.update(nouns)
             
             # Message length
             message_lengths[sender].append(len(msg.content))
@@ -401,18 +469,19 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             fun_fact=f"Fragment: \"{longest_message.content[:100]}...\""
         ))
     
-    # 7. Słownik - Most used word
-    if words_counter:
-        top_words = words_counter.most_common(10)
+    # 7. Słownik - Most used nouns
+    if nouns_counter:
+        top_nouns = nouns_counter.most_common(10)
         categories.append(CategoryResult(
             category_id="dictionary",
             title="📚 Słownik Grupy",
-            subtitle="Najczęściej używane słowa",
+            subtitle="Najczęściej używane rzeczowniki",
             icon="🔤",
-            winner=top_words[0][0],
-            winners=[(word, f"{count}x") for word, count in top_words],
-            value=top_words[0][1],
-            extra_info=f"\"{top_words[0][0]}\" - {top_words[0][1]} razy!",
+            winner=top_nouns[0][0],
+            winners=[(noun, f"{count}x") for noun, count in top_nouns],
+            value=top_nouns[0][1],
+            extra_info=f"\"{top_nouns[0][0]}\" - {top_nouns[0][1]} razy!",
+            fun_fact="📊 Algorytm: filtrujemy tylko rzeczowniki (po końcówkach i słowniku)"
         ))
     
     # 8. Duch - Least active
@@ -478,12 +547,6 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     # 12. Celebryta - Most reactions received
     if reactions_received:
         top_celebrities = reactions_received.most_common(5)
-        fun_fact_text = None
-        if most_reacted_message:
-            msg, count, reactions = most_reacted_message
-            reactions_str = " ".join(reactions[:10])  # Show first 10 reactions
-            msg_preview = msg.content[:80] + "..." if len(msg.content) > 80 else msg.content
-            fun_fact_text = f"Najbardziej reagowana wiadomość ({count}x {reactions_str}): \"{msg_preview}\""
         categories.append(CategoryResult(
             category_id="celebrity",
             title="⭐ Celebryta",
@@ -493,7 +556,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             winners=[(name, f"{count} reakcji") for name, count in top_celebrities],
             value=top_celebrities[0][1],
             extra_info="Gwiazda grupy!",
-            fun_fact=fun_fact_text,
+            fun_fact="📊 Algorytm: suma wszystkich reakcji otrzymanych na wiadomości"
         ))
     
     # 12b. Wiadomość z największą ilością reakcji
@@ -556,6 +619,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             winners=[(name, f"{count} pytań") for name, count in top_questioners],
             value=top_questioners[0][1],
             extra_info="Ciekawość to pierwszy stopień do piekła... wiedzy!",
+            fun_fact="📊 Algorytm: zliczamy wiadomości zawierające znak zapytania (?)"
         ))
     
     # 16. Linkomaniak - Most links
