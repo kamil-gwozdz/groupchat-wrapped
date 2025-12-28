@@ -450,10 +450,6 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
     <div class="progress" id="progress"></div>
     <button class="audio-control" id="audioControl" onclick="toggleAudio()">🔇</button>
-    
-    <audio id="backgroundMusic" loop preload="auto">
-        <source src="https://cdn.pixabay.com/audio/2022/10/18/audio_16e07a8c0c.mp3" type="audio/mpeg">
-    </audio>
 
     <div class="container" id="slideContainer">
         <!-- Intro Slide -->
@@ -483,8 +479,64 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         const slides = document.querySelectorAll('.slide');
         const totalSlides = slides.length;
         let isPlaying = false;
-        const audio = document.getElementById('backgroundMusic');
         const audioBtn = document.getElementById('audioControl');
+        
+        // Background music using Web Audio API
+        let bgMusicContext = null;
+        let bgMusicGain = null;
+        let bgMusicPlaying = false;
+        let bgMusicInterval = null;
+        
+        function startBackgroundMusic() {{
+            if (bgMusicPlaying) return;
+            bgMusicContext = new (window.AudioContext || window.webkitAudioContext)();
+            bgMusicGain = bgMusicContext.createGain();
+            bgMusicGain.connect(bgMusicContext.destination);
+            bgMusicGain.gain.value = 0.08;
+            bgMusicPlaying = true;
+            
+            // Ambient looping melody pattern
+            const chords = [
+                [261, 329, 392], // C major
+                [293, 369, 440], // D minor  
+                [349, 440, 523], // F major
+                [392, 494, 587], // G major
+            ];
+            
+            let chordIndex = 0;
+            
+            function playBackgroundChord() {{
+                if (!bgMusicPlaying) return;
+                const chord = chords[chordIndex % chords.length];
+                chord.forEach(freq => {{
+                    const osc = bgMusicContext.createOscillator();
+                    const gain = bgMusicContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(bgMusicGain);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, bgMusicContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, bgMusicContext.currentTime + 1.8);
+                    osc.start();
+                    osc.stop(bgMusicContext.currentTime + 2);
+                }});
+                chordIndex++;
+            }}
+            
+            playBackgroundChord();
+            bgMusicInterval = setInterval(playBackgroundChord, 2000);
+        }}
+        
+        function stopBackgroundMusic() {{
+            bgMusicPlaying = false;
+            if (bgMusicInterval) {{
+                clearInterval(bgMusicInterval);
+                bgMusicInterval = null;
+            }}
+            if (bgMusicGain) {{
+                bgMusicGain.gain.value = 0;
+            }}
+        }}
 
         function updateProgress() {{
             const progress = ((currentSlide + 1) / totalSlides) * 100;
@@ -503,16 +555,16 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             updateProgress();
             
-            // Play sound effect for this slide
+            // Play unique melody for this slide
             if (oldSlide !== currentSlide) {{
-                const sound = getCategorySound(currentSlide);
-                playSound(sound);
+                const melodyFn = getCategorySound(currentSlide);
+                if (melodyFn) melodyFn();
             }}
             
             // Trigger confetti on last slide
             if (currentSlide === totalSlides - 1) {{
                 createConfetti();
-                playSound('fanfare');
+                categoryMelodies['summary']();
             }}
         }}
 
@@ -526,36 +578,26 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
         function toggleAudio() {{
             if (isPlaying) {{
-                audio.pause();
+                stopBackgroundMusic();
                 audioBtn.textContent = '🔇';
+                isPlaying = false;
             }} else {{
-                audio.play().catch(e => console.log('Audio play failed:', e));
+                startBackgroundMusic();
                 audioBtn.textContent = '🔊';
+                isPlaying = true;
             }}
-            isPlaying = !isPlaying;
         }}
 
         function startPresentation() {{
             document.getElementById('startOverlay').classList.add('hidden');
-            // Try multiple audio sources
-            audio.volume = 0.5;
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {{
-                playPromise.then(() => {{
-                    audioBtn.textContent = '🔊';
-                    isPlaying = true;
-                }}).catch(e => {{
-                    console.log('Audio play failed:', e);
-                    // Still enable sound effects even if background music fails
-                    isPlaying = true;
-                    audioBtn.textContent = '🔊';
-                }});
-            }}
+            // Start background music
+            startBackgroundMusic();
+            audioBtn.textContent = '🔊';
+            isPlaying = true;
             // Resume audio context for sound effects
             if (audioContext.state === 'suspended') {{
                 audioContext.resume();
             }}
-            isPlaying = true;
         }}
 
         function createConfetti() {{
@@ -577,132 +619,224 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             }}
         }}
 
-        // Sound effects using Web Audio API
+        // Sound effects using Web Audio API - unique melody for each category
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
-        function playSound(type) {{
-            if (!isPlaying) return; // Only play sounds if audio is enabled
+        function playMelody(notes, waveType = 'sine', noteDuration = 0.15, noteGap = 0.1) {{
+            if (!isPlaying) return;
+            notes.forEach((freq, i) => {{
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = waveType;
+                osc.frequency.value = freq;
+                const startTime = audioContext.currentTime + i * noteGap;
+                gain.gain.setValueAtTime(0.12, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + noteDuration);
+                osc.start(startTime);
+                osc.stop(startTime + noteDuration);
+            }});
+        }}
+        
+        // Unique melodies for each category
+        const categoryMelodies = {{
+            // 🦉 Nocny Marek - mysterious owl hoot descending
+            'night_owl': () => playMelody([880, 660, 440, 330], 'sine', 0.2, 0.15),
             
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            // 🔥 Dzień Apokalipsy - intense rising alarm
+            'busiest_day': () => playMelody([200, 300, 400, 500, 600, 800], 'sawtooth', 0.08, 0.06),
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            // 🚪 Syn Marnotrawny - welcome back fanfare
+            'prodigal_son': () => playMelody([392, 494, 588, 784], 'triangle', 0.25, 0.2),
             
-            switch(type) {{
-                case 'whoosh':
-                    // Whoosh sound for slide transition
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.15);
-                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.15);
-                    break;
-                    
-                case 'reveal':
-                    // Reveal sound for winner announcement
-                    oscillator.type = 'triangle';
-                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
-                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.2);
-                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.3);
-                    break;
-                    
-                case 'fanfare':
-                    // Fanfare for final slide
-                    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-                    notes.forEach((freq, i) => {{
+            // 👑 Król Spamu - royal trumpets
+            'spam_king': () => playMelody([523, 523, 659, 784, 659, 784, 1047], 'triangle', 0.18, 0.12),
+            
+            // ⌨️ Maszyna do Pisania - typewriter clicks
+            'typing_machine': () => {{
+                [0, 50, 100, 150, 200, 250].forEach(delay => {{
+                    setTimeout(() => {{
                         const osc = audioContext.createOscillator();
                         const gain = audioContext.createGain();
                         osc.connect(gain);
                         gain.connect(audioContext.destination);
-                        osc.type = 'triangle';
-                        osc.frequency.value = freq;
-                        gain.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.15);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.4);
-                        osc.start(audioContext.currentTime + i * 0.15);
-                        osc.stop(audioContext.currentTime + i * 0.15 + 0.4);
-                    }});
-                    return;
-                    
-                case 'pop':
-                    // Pop sound
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.05);
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.05);
-                    break;
-                    
-                case 'drum':
-                    // Drum roll effect
-                    oscillator.type = 'square';
-                    oscillator.frequency.value = 150;
-                    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
-                    for (let i = 0; i < 10; i++) {{
-                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.05);
-                        gainNode.gain.setValueAtTime(0.02, audioContext.currentTime + i * 0.05 + 0.025);
-                    }}
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.6);
-                    break;
-                    
-                case 'sparkle':
-                    // Sparkle/magic sound
-                    const sparkleNotes = [1200, 1400, 1600, 1800, 2000];
-                    sparkleNotes.forEach((freq, i) => {{
+                        osc.type = 'square';
+                        osc.frequency.value = 1200 + Math.random() * 400;
+                        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.03);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.03);
+                    }}, delay);
+                }});
+            }},
+            
+            // 📜 Poeta - elegant harp arpeggio
+            'poet': () => playMelody([523, 659, 784, 988, 1175, 1319], 'sine', 0.3, 0.1),
+            
+            // 📚 Słownik - book page flip sounds
+            'dictionary': () => playMelody([2000, 1800, 2200, 1600, 2400], 'sine', 0.05, 0.08),
+            
+            // 👻 Duch - spooky ghost whoosh
+            'ghost': () => {{
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.5);
+            }},
+            
+            // 🎬 Reżyser - movie clapper
+            'starter': () => playMelody([800, 1000, 800, 1200], 'square', 0.05, 0.08),
+            
+            // 🚪 Zamykacz - door closing thud
+            'closer': () => {{
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.3);
+            }},
+            
+            // ❤️ Reakcjonista - heart beating
+            'reactor': () => {{
+                [0, 200, 600, 800].forEach((delay, i) => {{
+                    setTimeout(() => {{
                         const osc = audioContext.createOscillator();
                         const gain = audioContext.createGain();
                         osc.connect(gain);
                         gain.connect(audioContext.destination);
                         osc.type = 'sine';
-                        osc.frequency.value = freq;
-                        gain.gain.setValueAtTime(0.08, audioContext.currentTime + i * 0.08);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.08 + 0.2);
-                        osc.start(audioContext.currentTime + i * 0.08);
-                        osc.stop(audioContext.currentTime + i * 0.08 + 0.2);
-                    }});
-                    return;
-            }}
-        }}
-        
-        // Category-specific sounds
-        const categorySounds = {{
-            'night_owl': 'sparkle',
-            'busiest_day': 'drum',
-            'prodigal_son': 'reveal',
-            'spam_king': 'fanfare',
-            'typing_machine': 'pop',
-            'poet': 'sparkle',
-            'dictionary': 'pop',
-            'ghost': 'whoosh',
-            'starter': 'reveal',
-            'closer': 'whoosh',
-            'reactor': 'sparkle',
-            'celebrity': 'fanfare',
-            'viral_message': 'fanfare',
-            'paparazzo': 'pop',
-            'comedian': 'pop',
-            'detective': 'reveal',
-            'link_maniac': 'pop',
-            'emoji_king': 'sparkle',
-            'writer': 'reveal',
-            'peak_hour': 'drum',
-            'summary': 'fanfare'
+                        osc.frequency.value = i % 2 === 0 ? 80 : 100;
+                        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.15);
+                    }}, delay);
+                }});
+            }},
+            
+            // ⭐ Celebryta - star twinkle
+            'celebrity': () => playMelody([1568, 1760, 1976, 2093, 1760, 2349], 'sine', 0.12, 0.08),
+            
+            // 💥 Viral - explosion boom
+            'viral_message': () => {{
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioContext.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.25, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.5);
+                // Add high crackle
+                setTimeout(() => playMelody([3000, 2500, 3500, 2000], 'square', 0.03, 0.02), 50);
+            }},
+            
+            // 📸 Paparazzo - camera shutter
+            'paparazzo': () => {{
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'square';
+                osc.frequency.value = 4000;
+                gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.02);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.02);
+                setTimeout(() => {{
+                    const osc2 = audioContext.createOscillator();
+                    const gain2 = audioContext.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContext.destination);
+                    osc2.type = 'square';
+                    osc2.frequency.value = 3000;
+                    gain2.gain.setValueAtTime(0.08, audioContext.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.03);
+                    osc2.start();
+                    osc2.stop(audioContext.currentTime + 0.03);
+                }}, 80);
+            }},
+            
+            // 🤡 Śmieszek - funny bouncy sound
+            'comedian': () => playMelody([300, 500, 400, 600, 350, 700], 'triangle', 0.1, 0.07),
+            
+            // 🔍 Detektyw - investigation reveal
+            'detective': () => playMelody([220, 277, 330, 440], 'triangle', 0.2, 0.18),
+            
+            // 🔗 Linkomaniak - digital connection beeps
+            'link_maniac': () => playMelody([1047, 1319, 1047, 1568, 1319], 'square', 0.08, 0.1),
+            
+            // 😎 Emoji Master - playful ascending
+            'emoji_king': () => playMelody([392, 440, 494, 523, 587, 659, 698, 784], 'sine', 0.08, 0.06),
+            
+            // 📝 Pisarz - pen writing scratch
+            'writer': () => {{
+                [0, 80, 160, 280, 350].forEach(delay => {{
+                    setTimeout(() => {{
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sawtooth';
+                        osc.frequency.value = 800 + Math.random() * 600;
+                        gain.gain.setValueAtTime(0.04, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.06);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.06);
+                    }}, delay);
+                }});
+            }},
+            
+            // ⏰ Godzina Szczytu - clock ticking then alarm
+            'peak_hour': () => {{
+                [0, 150, 300].forEach(delay => {{
+                    setTimeout(() => {{
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = 1000;
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.05);
+                    }}, delay);
+                }});
+                setTimeout(() => playMelody([880, 880, 1100, 880], 'triangle', 0.15, 0.1), 450);
+            }},
+            
+            // 📊 Podsumowanie - grand finale fanfare
+            'summary': () => {{
+                playMelody([523, 659, 784, 1047, 1319, 1568], 'triangle', 0.25, 0.12);
+                setTimeout(() => playMelody([784, 988, 1175, 1568], 'sine', 0.4, 0.15), 600);
+            }},
+            
+            // Default intro sound
+            'intro': () => playMelody([440, 554, 659, 880], 'sine', 0.2, 0.15)
         }};
         
         function getCategorySound(slideIndex) {{
             const slide = slides[slideIndex];
             const categoryId = slide.getAttribute('data-category');
-            return categorySounds[categoryId] || 'whoosh';
+            return categoryMelodies[categoryId] || categoryMelodies['intro'];
         }}
 
         // Keyboard navigation
