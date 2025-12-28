@@ -14,7 +14,7 @@ class Message:
     sender: str
     content: str
     timestamp: datetime
-    message_type: str  # text, photo, video, audio, gif, sticker, share
+    message_type: str  # text, photo, video, audio, gif, sticker, share, name_change, photo_change
     reactions: list[dict]
     
     
@@ -47,7 +47,25 @@ def parse_message(msg_data: dict) -> Message | None:
     
     if "content" in msg_data:
         content = decode_facebook_encoding(msg_data["content"])
-        msg_type = "text"
+        lower_content = content.lower()
+        
+        # Check for group name changes
+        if any(phrase in lower_content for phrase in [
+            'named the group', 'changed the group name',
+            'nazwał grupę', 'nadał grupie nazwę', 'zmienił nazwę grupy',
+            'zmienił(-a) nazwę grupy', 'nadał(-a) grupie nazwę'
+        ]):
+            msg_type = "name_change"
+        # Check for group photo changes
+        elif any(phrase in lower_content for phrase in [
+            'changed the group photo', 'set the group photo',
+            'removed the group photo', 'zmienił zdjęcie grupy',
+            'ustawił zdjęcie grupy', 'usunął zdjęcie grupy',
+            'zmienił(-a) zdjęcie grupy'
+        ]):
+            msg_type = "photo_change"
+        else:
+            msg_type = "text"
     elif "photos" in msg_data:
         msg_type = "photo"
         content = f"[{len(msg_data['photos'])} zdjęć]"

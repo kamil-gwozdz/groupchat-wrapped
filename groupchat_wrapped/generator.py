@@ -226,6 +226,82 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             opacity: 0.9;
         }}
 
+        /* Timeline for group identity changes */
+        .timeline {{
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 10px;
+            margin: 20px 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }}
+        
+        .timeline::-webkit-scrollbar {{
+            width: 6px;
+        }}
+        
+        .timeline::-webkit-scrollbar-track {{
+            background: transparent;
+        }}
+        
+        .timeline::-webkit-scrollbar-thumb {{
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }}
+        
+        .timeline-item {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            border-left: 4px solid #f093fb;
+            animation: slideInLeft 0.5s ease;
+            flex-wrap: wrap;
+        }}
+        
+        .timeline-item.timeline-photo {{
+            border-left-color: #4facfe;
+        }}
+        
+        .timeline-date {{
+            font-size: 0.85rem;
+            opacity: 0.7;
+            min-width: 90px;
+        }}
+        
+        .timeline-icon {{
+            font-size: 1.3rem;
+        }}
+        
+        .timeline-content {{
+            flex: 1;
+            font-weight: 600;
+            font-size: 1.1rem;
+            word-break: break-word;
+        }}
+        
+        .timeline-who {{
+            font-size: 0.85rem;
+            opacity: 0.6;
+            font-style: italic;
+        }}
+        
+        @keyframes slideInLeft {{
+            from {{
+                opacity: 0;
+                transform: translateX(-30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateX(0);
+            }}
+        }}
+
         /* Intro slide */
         .intro-slide {{
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
@@ -823,6 +899,15 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                 setTimeout(() => playMelody([880, 880, 1100, 880], 'triangle', 0.15, 0.1), 450);
             }},
             
+            // 🎭 Metamorfozy - theatrical transformation sound
+            'group_identity': () => {{
+                // Mysterious rising transformation
+                playMelody([220, 330, 440, 550, 660, 880], 'sine', 0.15, 0.12);
+                setTimeout(() => {{
+                    playMelody([440, 523, 659, 784], 'triangle', 0.2, 0.1);
+                }}, 700);
+            }},
+            
             // 📊 Podsumowanie - grand finale fanfare
             'summary': () => {{
                 playMelody([523, 659, 784, 1047, 1319, 1568], 'triangle', 0.25, 0.12);
@@ -889,7 +974,33 @@ def generate_slides(categories: list[CategoryResult]) -> str:
     slides_html = []
     
     for cat in categories:
-        if cat.winners and len(cat.winners) > 1:
+        if cat.category_id == "group_identity" and cat.winners:
+            # Timeline style for group identity changes
+            timeline_items = ""
+            for date_str, icon, who, what, change_type in cat.winners[:15]:  # Max 15 entries
+                item_class = "timeline-name" if change_type == "name" else "timeline-photo"
+                timeline_items += f'''
+                    <div class="timeline-item {item_class}">
+                        <span class="timeline-date">{date_str}</span>
+                        <span class="timeline-icon">{icon}</span>
+                        <span class="timeline-content">{what}</span>
+                        <span class="timeline-who">— {who}</span>
+                    </div>'''
+            
+            slide = f'''
+        <div class="slide" data-category="{cat.category_id}">
+            <div class="slide-content">
+                <span class="icon">{cat.icon}</span>
+                <h2 class="title">{cat.title}</h2>
+                <p class="subtitle">{cat.subtitle}</p>
+                <div class="timeline">
+                    {timeline_items}
+                </div>
+                {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
+                {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+            </div>
+        </div>'''
+        elif cat.winners and len(cat.winners) > 1:
             # Top list style
             list_items = ""
             for i, (name, score) in enumerate(cat.winners[:5], 1):

@@ -1,17 +1,32 @@
 {
   "participants": [
-    {"name": "Jan Kowalski"},
-    {"name": "Anna Nowak"},
-    {"name": "Piotr Wiśniewski"},
-    {"name": "Maria Dąbrowska"},
-    {"name": "Tomasz Lewandowski"}
+    {
+      "name": "Jan Kowalski"
+    },
+    {
+      "name": "Anna Nowak"
+    },
+    {
+      "name": "Piotr Wiśniewski"
+    },
+    {
+      "name": "Maria Dąbrowska"
+    },
+    {
+      "name": "Tomasz Lewandowski"
+    }
   ],
   "messages": [
     {
       "sender_name": "Jan Kowalski",
       "timestamp_ms": 1704067200000,
       "content": "Hej wszystkim! Nowy rok, nowe możliwości!",
-      "reactions": [{"reaction": "❤️", "actor": "Anna Nowak"}]
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Anna Nowak"
+        }
+      ]
     },
     {
       "sender_name": "Anna Nowak",
@@ -23,7 +38,16 @@
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1704074400000,
       "content": "Siema! Kto na piwo w weekend?",
-      "reactions": [{"reaction": "👍", "actor": "Jan Kowalski"}, {"reaction": "👍", "actor": "Tomasz Lewandowski"}]
+      "reactions": [
+        {
+          "reaction": "👍",
+          "actor": "Jan Kowalski"
+        },
+        {
+          "reaction": "👍",
+          "actor": "Tomasz Lewandowski"
+        }
+      ]
     },
     {
       "sender_name": "Jan Kowalski",
@@ -59,7 +83,12 @@
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1704081600000,
       "content": "Brzmi super! Jestem za!",
-      "reactions": [{"reaction": "❤️", "actor": "Jan Kowalski"}]
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Jan Kowalski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
@@ -83,13 +112,23 @@
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1704157200000,
       "content": "Pracuję nad projektem, deadline na piątek 😅",
-      "reactions": [{"reaction": "😢", "actor": "Piotr Wiśniewski"}]
+      "reactions": [
+        {
+          "reaction": "😢",
+          "actor": "Piotr Wiśniewski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1704160800000,
       "content": "Powodzenia! Dasz radę! 💪",
-      "reactions": [{"reaction": "❤️", "actor": "Anna Nowak"}]
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Anna Nowak"
+        }
+      ]
     },
     {
       "sender_name": "Jan Kowalski",
@@ -125,7 +164,20 @@
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1704326400000,
       "content": "Hej! Skończyłam projekt! 🎉",
-      "reactions": [{"reaction": "🎉", "actor": "Jan Kowalski"}, {"reaction": "🎉", "actor": "Piotr Wiśniewski"}, {"reaction": "👏", "actor": "Tomasz Lewandowski"}]
+      "reactions": [
+        {
+          "reaction": "🎉",
+          "actor": "Jan Kowalski"
+        },
+        {
+          "reaction": "🎉",
+          "actor": "Piotr Wiśniewski"
+        },
+        {
+          "reaction": "👏",
+          "actor": "Tomasz Lewandowski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
@@ -143,13 +195,27 @@
       "sender_name": "Maria Dąbrowska",
       "timestamp_ms": 1709251200000,
       "content": "Hej, żyję jeszcze! Przepraszam, że tak długo nie pisałam 😅",
-      "reactions": [{"reaction": "😮", "actor": "Jan Kowalski"}, {"reaction": "❤️", "actor": "Anna Nowak"}]
+      "reactions": [
+        {
+          "reaction": "😮",
+          "actor": "Jan Kowalski"
+        },
+        {
+          "reaction": "❤️",
+          "actor": "Anna Nowak"
+        }
+      ]
     },
     {
       "sender_name": "Jan Kowalski",
       "timestamp_ms": 1709254800000,
       "content": "Maria! Myśleliśmy że cię porwali kosmici! 👽",
-      "reactions": [{"reaction": "😂", "actor": "Maria Dąbrowska"}]
+      "reactions": [
+        {
+          "reaction": "😂",
+          "actor": "Maria Dąbrowska"
+        }
+      ]
     },
     {
       "sender_name": "Anna Nowak",
@@ -161,7 +227,20 @@
       "sender_name": "Maria Dąbrowska",
       "timestamp_ms": 1709262000000,
       "content": "Dużo się działo! Zmieniłam pracę i przeprowadziłam się do innego miasta. Teraz mieszkam w Krakowie! Jest super, polecam. Musicie mnie odwiedzić, mam teraz duże mieszkanie z widokiem na Wawel. Pokażę wam wszystkie najlepsze miejsca w mieście, znam już sporo fajnych knajp i kawiarni. A jak u was? Co się działo przez te wszystkie miesiące?",
-      "reactions": [{"reaction": "❤️", "actor": "Jan Kowalski"}, {"reaction": "❤️", "actor": "Anna Nowak"}, {"reaction": "👍", "actor": "Piotr Wiśniewski"}]
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Jan Kowalski"
+        },
+        {
+          "reaction": "❤️",
+          "actor": "Anna Nowak"
+        },
+        {
+          "reaction": "👍",
+          "actor": "Piotr Wiśniewski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
@@ -215,7 +294,12 @@
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1709276400000,
       "content": "Majówka brzmi super!",
-      "reactions": [{"reaction": "👍", "actor": "Jan Kowalski"}]
+      "reactions": [
+        {
+          "reaction": "👍",
+          "actor": "Jan Kowalski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
@@ -251,7 +335,12 @@
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1709380800000,
       "content": "True Detective, Succession, Breaking Bad!",
-      "reactions": [{"reaction": "👍", "actor": "Jan Kowalski"}]
+      "reactions": [
+        {
+          "reaction": "👍",
+          "actor": "Jan Kowalski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
@@ -269,7 +358,20 @@
       "sender_name": "Jan Kowalski",
       "timestamp_ms": 1714521600000,
       "content": "Jest 1 maja! Jedziemy do Krakowa! 🚗",
-      "reactions": [{"reaction": "🎉", "actor": "Anna Nowak"}, {"reaction": "🎉", "actor": "Piotr Wiśniewski"}, {"reaction": "🎉", "actor": "Maria Dąbrowska"}]
+      "reactions": [
+        {
+          "reaction": "🎉",
+          "actor": "Anna Nowak"
+        },
+        {
+          "reaction": "🎉",
+          "actor": "Piotr Wiśniewski"
+        },
+        {
+          "reaction": "🎉",
+          "actor": "Maria Dąbrowska"
+        }
+      ]
     },
     {
       "sender_name": "Anna Nowak",
@@ -293,19 +395,42 @@
       "sender_name": "Tomasz Lewandowski",
       "timestamp_ms": 1714536000000,
       "content": "Niestety nie dam rady, może następnym razem",
-      "reactions": [{"reaction": "😢", "actor": "Jan Kowalski"}]
+      "reactions": [
+        {
+          "reaction": "😢",
+          "actor": "Jan Kowalski"
+        }
+      ]
     },
     {
       "sender_name": "Jan Kowalski",
       "timestamp_ms": 1714608000000,
       "content": "Kraków jest piękny! Dzięki Maria za super wycieczkę! 🏰",
-      "reactions": [{"reaction": "❤️", "actor": "Maria Dąbrowska"}]
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Maria Dąbrowska"
+        }
+      ]
     },
     {
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1714611600000,
       "content": "Najlepszy weekend ever! ❤️",
-      "reactions": [{"reaction": "❤️", "actor": "Jan Kowalski"}, {"reaction": "❤️", "actor": "Maria Dąbrowska"}, {"reaction": "❤️", "actor": "Piotr Wiśniewski"}]
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Jan Kowalski"
+        },
+        {
+          "reaction": "❤️",
+          "actor": "Maria Dąbrowska"
+        },
+        {
+          "reaction": "❤️",
+          "actor": "Piotr Wiśniewski"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
@@ -316,22 +441,41 @@
     {
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1714615260000,
-      "photos": [{"uri": "photo1.jpg"}]
+      "photos": [
+        {
+          "uri": "photo1.jpg"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1714615320000,
-      "photos": [{"uri": "photo2.jpg"}]
+      "photos": [
+        {
+          "uri": "photo2.jpg"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1714615380000,
-      "photos": [{"uri": "photo3.jpg"}]
+      "photos": [
+        {
+          "uri": "photo3.jpg"
+        }
+      ]
     },
     {
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1714615440000,
-      "photos": [{"uri": "photo4.jpg"}, {"uri": "photo5.jpg"}]
+      "photos": [
+        {
+          "uri": "photo4.jpg"
+        },
+        {
+          "uri": "photo5.jpg"
+        }
+      ]
     },
     {
       "sender_name": "Anna Nowak",
@@ -354,18 +498,64 @@
     {
       "sender_name": "Jan Kowalski",
       "timestamp_ms": 1714712400000,
-      "sticker": {"uri": "sticker.png"}
+      "sticker": {
+        "uri": "sticker.png"
+      }
     },
     {
       "sender_name": "Piotr Wiśniewski",
       "timestamp_ms": 1714716000000,
-      "gifs": [{"uri": "https://giphy.com/example.gif"}]
+      "gifs": [
+        {
+          "uri": "https://giphy.com/example.gif"
+        }
+      ]
     },
     {
       "sender_name": "Anna Nowak",
       "timestamp_ms": 1714719600000,
       "content": "😂😂😂",
       "reactions": []
+    },
+    {
+      "sender_name": "Jan Kowalski",
+      "timestamp_ms": 1706745600000,
+      "content": "Jan Kowalski named the group Ekipa Weekendowa"
+    },
+    {
+      "sender_name": "Anna Nowak",
+      "timestamp_ms": 1709424000000,
+      "content": "Anna Nowak changed the group photo"
+    },
+    {
+      "sender_name": "Piotr Wiśniewski",
+      "timestamp_ms": 1712016000000,
+      "content": "Piotr Wiśniewski named the group Królowie Memów"
+    },
+    {
+      "sender_name": "Tomasz Lewandowski",
+      "timestamp_ms": 1717200000000,
+      "content": "Tomasz Lewandowski set the group photo"
+    },
+    {
+      "sender_name": "Anna Nowak",
+      "timestamp_ms": 1722470400000,
+      "content": "Anna Nowak named the group Letnia Ekipa 🌴"
+    },
+    {
+      "sender_name": "Jan Kowalski",
+      "timestamp_ms": 1727740800000,
+      "content": "Jan Kowalski named the group Jesienna Melancholia 🍂"
+    },
+    {
+      "sender_name": "Maria Dąbrowska",
+      "timestamp_ms": 1730419200000,
+      "content": "Maria Dąbrowska changed the group photo"
+    },
+    {
+      "sender_name": "Piotr Wiśniewski",
+      "timestamp_ms": 1734048000000,
+      "content": "Piotr Wiśniewski named the group Świąteczna Rodzinka ��"
     }
   ],
   "title": "Najlepsi Znajomi",

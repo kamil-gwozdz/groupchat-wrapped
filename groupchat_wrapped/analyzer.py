@@ -182,6 +182,10 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     favorite_emoji_per_person: dict[str, Counter[str]] = defaultdict(Counter)
     most_reacted_message: tuple[Message, int, list[str]] | None = None  # (message, count, reactions)
     
+    # Track group name and photo changes
+    name_changes: list[tuple[datetime, str, str]] = []  # (timestamp, who, content)
+    photo_changes: list[tuple[datetime, str, str]] = []  # (timestamp, who, action)
+    
     emoji_pattern = re.compile(
         "["
         "\U0001F600-\U0001F64F"  # emoticons
@@ -241,6 +245,10 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             stickers_per_person[sender] += 1
         elif msg.message_type == "gif":
             gifs_per_person[sender] += 1
+        elif msg.message_type == "name_change":
+            name_changes.append((msg.timestamp, sender, msg.content))
+        elif msg.message_type == "photo_change":
+            photo_changes.append((msg.timestamp, sender, msg.content))
         
         # Reactions
         msg_reactions = []
@@ -610,7 +618,52 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             extra_info=f"{peak_hour[1]} wiadomości o tej porze!",
         ))
     
-    # 20. Statystyki ogólne
+    # 20. Historia nazw i obrazków grupy
+    if name_changes or photo_changes:
+        # Combine and sort by timestamp
+        all_changes = []
+        for ts, who, content in name_changes:
+            # Try to extract the new name from the content
+            # Common patterns: "X named the group Y", "X zmienił nazwę grupy na Y"
+            new_name = content
+            if ' na ' in content.lower():
+                new_name = content.split(' na ', 1)[-1].strip('".')
+            elif 'named the group' in content.lower():
+                parts = content.split('named the group', 1)
+                if len(parts) > 1:
+                    new_name = parts[1].strip(' .')
+            all_changes.append((ts, '🎭', who, new_name, 'name'))
+        
+        for ts, who, action in photo_changes:
+            icon = '📸' if 'ustawi' in action.lower() or 'set' in action.lower() else '🔄'
+            if 'usun' in action.lower() or 'removed' in action.lower():
+                icon = '❌'
+            all_changes.append((ts, icon, who, 'Zmiana zdjęcia', 'photo'))
+        
+        all_changes.sort(key=lambda x: x[0])
+        
+        polish_months_short = ['', 'sty', 'lut', 'mar', 'kwi', 'maj', 'cze',
+                               'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']
+        
+        # Format timeline entries
+        timeline_entries = []
+        for ts, icon, who, what, change_type in all_changes:
+            date_str = f"{ts.day} {polish_months_short[ts.month]} {ts.year}"
+            timeline_entries.append((date_str, icon, who, what, change_type))
+        
+        categories.append(CategoryResult(
+            category_id="group_identity",
+            title="🎭 Metamorfozy",
+            subtitle="Historia nazw i zdjęć grupy",
+            icon="🎨",
+            winner=None,
+            winners=timeline_entries,  # Special format for timeline
+            value=len(all_changes),
+            extra_info=f"{len(name_changes)} zmian nazwy, {len(photo_changes)} zmian zdjęcia",
+            fun_fact=f"Grupa przeszła {len(all_changes)} metamorfoz!" if all_changes else None
+        ))
+    
+    # 21. Statystyki ogólne
     total_days = (messages[-1].timestamp - messages[0].timestamp).days + 1
     avg_per_day = len(messages) / total_days if total_days > 0 else 0
     
