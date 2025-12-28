@@ -226,69 +226,100 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             opacity: 0.9;
         }}
 
-        /* Timeline for group identity changes */
-        .timeline {{
+        /* Horizontal Timeline for group identity changes */
+        .timeline-slide-content {{
+            max-width: 95vw !important;
+            width: 95vw !important;
+        }}
+        
+        .horizontal-timeline-wrapper {{
+            width: 100%;
+            padding: 20px 10px;
+            margin: 30px 0;
+        }}
+        
+        .timeline-arrow {{
+            position: relative;
+            width: 100%;
+        }}
+        
+        .timeline-labels {{
+            display: flex;
+            width: calc(100% - 30px);
+            margin-bottom: 8px;
+        }}
+        
+        .timeline-label {{
+            text-align: left;
+            padding-left: 5px;
+        }}
+        
+        .label-date {{
+            font-size: 0.75rem;
+            opacity: 0.7;
+            white-space: nowrap;
+        }}
+        
+        .timeline-bar {{
+            display: flex;
+            width: calc(100% - 30px);
+            height: 80px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }}
+        
+        .timeline-segment {{
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-height: 50vh;
-            overflow-y: auto;
-            padding: 10px;
-            margin: 20px 0;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.3) transparent;
-        }}
-        
-        .timeline::-webkit-scrollbar {{
-            width: 6px;
-        }}
-        
-        .timeline::-webkit-scrollbar-track {{
-            background: transparent;
-        }}
-        
-        .timeline::-webkit-scrollbar-thumb {{
-            background: rgba(255,255,255,0.3);
-            border-radius: 3px;
-        }}
-        
-        .timeline-item {{
-            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            border-left: 4px solid #f093fb;
-            animation: slideInLeft 0.5s ease;
-            flex-wrap: wrap;
+            padding: 8px 5px;
+            min-width: 60px;
+            transition: transform 0.3s, filter 0.3s;
+            cursor: pointer;
+            border-right: 2px solid rgba(0,0,0,0.2);
         }}
         
-        .timeline-item.timeline-photo {{
-            border-left-color: #4facfe;
+        .timeline-segment:last-child {{
+            border-right: none;
         }}
         
-        .timeline-date {{
+        .timeline-segment:hover {{
+            transform: scaleY(1.1);
+            filter: brightness(1.2);
+            z-index: 10;
+        }}
+        
+        .segment-name {{
             font-size: 0.85rem;
-            opacity: 0.7;
-            min-width: 90px;
-        }}
-        
-        .timeline-icon {{
-            font-size: 1.3rem;
-        }}
-        
-        .timeline-content {{
-            flex: 1;
-            font-weight: 600;
-            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             word-break: break-word;
+            line-height: 1.2;
         }}
         
-        .timeline-who {{
-            font-size: 0.85rem;
-            opacity: 0.6;
-            font-style: italic;
+        .segment-days {{
+            font-size: 0.7rem;
+            opacity: 0.9;
+            margin-top: 4px;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 6px;
+            border-radius: 8px;
+        }}
+        
+        .timeline-arrow-head {{
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-left: 30px solid #43e97b;
         }}
         
         @keyframes slideInLeft {{
@@ -975,26 +1006,43 @@ def generate_slides(categories: list[CategoryResult]) -> str:
     
     for cat in categories:
         if cat.category_id == "group_identity" and cat.winners:
-            # Timeline style for group identity changes
-            timeline_items = ""
-            for date_str, icon, who, what, change_type in cat.winners[:15]:  # Max 15 entries
-                item_class = "timeline-name" if change_type == "name" else "timeline-photo"
-                timeline_items += f'''
-                    <div class="timeline-item {item_class}">
-                        <span class="timeline-date">{date_str}</span>
-                        <span class="timeline-icon">{icon}</span>
-                        <span class="timeline-content">{what}</span>
-                        <span class="timeline-who">— {who}</span>
+            # Horizontal timeline with proportional segments
+            colors = ['#f093fb', '#667eea', '#4facfe', '#43e97b', '#f5576c', '#ffd700', '#ff6b6b', '#48dbfb']
+            timeline_segments = ""
+            timeline_labels = ""
+            
+            for i, entry in enumerate(cat.winners[:8]):  # Max 8 entries
+                color = colors[i % len(colors)]
+                width = min(entry['percentage'], 35)  # Cap at 35% for readability
+                name_short = entry['name'][:20] + ('...' if len(entry['name']) > 20 else '')
+                
+                timeline_segments += f'''
+                    <div class="timeline-segment" style="flex: {entry['days']}; background: {color};" title="{entry['name']} ({entry['days']} dni)">
+                        <span class="segment-name">{name_short}</span>
+                        <span class="segment-days">{entry['days']}d</span>
+                    </div>'''
+                
+                timeline_labels += f'''
+                    <div class="timeline-label" style="flex: {entry['days']};">
+                        <span class="label-date">{entry['date']}</span>
                     </div>'''
             
             slide = f'''
         <div class="slide" data-category="{cat.category_id}">
-            <div class="slide-content">
+            <div class="slide-content timeline-slide-content">
                 <span class="icon">{cat.icon}</span>
                 <h2 class="title">{cat.title}</h2>
                 <p class="subtitle">{cat.subtitle}</p>
-                <div class="timeline">
-                    {timeline_items}
+                <div class="horizontal-timeline-wrapper">
+                    <div class="timeline-arrow">
+                        <div class="timeline-labels">
+                            {timeline_labels}
+                        </div>
+                        <div class="timeline-bar">
+                            {timeline_segments}
+                        </div>
+                        <div class="timeline-arrow-head"></div>
+                    </div>
                 </div>
                 {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
                 {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}

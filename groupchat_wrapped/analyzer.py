@@ -620,11 +620,20 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     
     # 20. Historia nazw i obrazków grupy
     if name_changes or photo_changes:
-        # Combine and sort by timestamp
-        all_changes = []
-        for ts, who, content in name_changes:
-            # Try to extract the new name from the content
-            # Common patterns: "X named the group Y", "X zmienił nazwę grupy na Y"
+        # Sort name changes by timestamp and calculate durations
+        name_changes_sorted = sorted(name_changes, key=lambda x: x[0])
+        
+        polish_months_short = ['', 'sty', 'lut', 'mar', 'kwi', 'maj', 'cze',
+                               'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']
+        
+        # Calculate timeline for names with durations
+        timeline_entries = []
+        total_span = (messages[-1].timestamp - messages[0].timestamp).days if messages else 1
+        if total_span < 1:
+            total_span = 1
+        
+        for i, (ts, who, content) in enumerate(name_changes_sorted):
+            # Extract the new name from content
             new_name = content
             if ' na ' in content.lower():
                 new_name = content.split(' na ', 1)[-1].strip('".')
@@ -632,35 +641,45 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
                 parts = content.split('named the group', 1)
                 if len(parts) > 1:
                     new_name = parts[1].strip(' .')
-            all_changes.append((ts, '🎭', who, new_name, 'name'))
+            
+            # Calculate duration until next change or end
+            if i + 1 < len(name_changes_sorted):
+                end_ts = name_changes_sorted[i + 1][0]
+            else:
+                end_ts = messages[-1].timestamp
+            
+            duration_days = (end_ts - ts).days
+            if duration_days < 1:
+                duration_days = 1
+            
+            # Calculate percentage of total timeline
+            percentage = (duration_days / total_span) * 100
+            if percentage < 5:
+                percentage = 5  # Minimum width for visibility
+            
+            date_str = f"{ts.day} {polish_months_short[ts.month]}"
+            timeline_entries.append({
+                'name': new_name,
+                'who': who,
+                'date': date_str,
+                'days': duration_days,
+                'percentage': percentage,
+                'start_ts': ts,
+            })
         
-        for ts, who, action in photo_changes:
-            icon = '📸' if 'ustawi' in action.lower() or 'set' in action.lower() else '🔄'
-            if 'usun' in action.lower() or 'removed' in action.lower():
-                icon = '❌'
-            all_changes.append((ts, icon, who, 'Zmiana zdjęcia', 'photo'))
-        
-        all_changes.sort(key=lambda x: x[0])
-        
-        polish_months_short = ['', 'sty', 'lut', 'mar', 'kwi', 'maj', 'cze',
-                               'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']
-        
-        # Format timeline entries
-        timeline_entries = []
-        for ts, icon, who, what, change_type in all_changes:
-            date_str = f"{ts.day} {polish_months_short[ts.month]} {ts.year}"
-            timeline_entries.append((date_str, icon, who, what, change_type))
+        # Count photo changes
+        photo_count = len(photo_changes)
         
         categories.append(CategoryResult(
             category_id="group_identity",
             title="🎭 Metamorfozy",
-            subtitle="Historia nazw i zdjęć grupy",
+            subtitle="Historia nazw grupy",
             icon="🎨",
             winner=None,
-            winners=timeline_entries,  # Special format for timeline
-            value=len(all_changes),
-            extra_info=f"{len(name_changes)} zmian nazwy, {len(photo_changes)} zmian zdjęcia",
-            fun_fact=f"Grupa przeszła {len(all_changes)} metamorfoz!" if all_changes else None
+            winners=timeline_entries,  # Special format for horizontal timeline
+            value=len(name_changes),
+            extra_info=f"{len(name_changes)} zmian nazwy" + (f", {photo_count} zmian zdjęcia" if photo_count else ""),
+            fun_fact=f"Najdłuższa nazwa: {max(timeline_entries, key=lambda x: x['days'])['days']} dni" if timeline_entries else None
         ))
     
     # 21. Statystyki ogólne
