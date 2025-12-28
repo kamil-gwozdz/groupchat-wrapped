@@ -12,7 +12,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{result.conversation_title} - Wrapped 2024</title>
+    <title>{result.conversation_title} - Wrapped 2025</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * {{
@@ -392,7 +392,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                     {result.date_range[0].strftime('%d.%m.%Y')} - {result.date_range[1].strftime('%d.%m.%Y')}
                 </p>
             </div>
-            <div class="year">2024</div>
+            <div class="year">2025</div>
         </div>
 
         {generate_slides(result.categories)}
