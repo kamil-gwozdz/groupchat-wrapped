@@ -518,6 +518,83 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         .start-overlay.hidden {{
             display: none;
         }}
+        
+        /* Suspense / Reveal phases */
+        .teaser-phase {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }}
+        
+        .teaser-icon {{
+            animation: pulse 1.5s infinite, bounce 2s infinite;
+        }}
+        
+        @keyframes bounce {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-20px); }}
+        }}
+        
+        .suspense-dots {{
+            font-size: 4rem;
+            margin: 30px 0;
+            display: flex;
+            gap: 10px;
+        }}
+        
+        .suspense-dots span {{
+            animation: dotPulse 1.5s infinite;
+            opacity: 0.3;
+        }}
+        
+        .suspense-dots span:nth-child(2) {{
+            animation-delay: 0.3s;
+        }}
+        
+        .suspense-dots span:nth-child(3) {{
+            animation-delay: 0.6s;
+        }}
+        
+        @keyframes dotPulse {{
+            0%, 100% {{ opacity: 0.3; transform: scale(1); }}
+            50% {{ opacity: 1; transform: scale(1.3); }}
+        }}
+        
+        .tap-hint {{
+            font-size: 1.1rem;
+            opacity: 0.6;
+            margin-top: 20px;
+            animation: fadeInOut 2s infinite;
+        }}
+        
+        @keyframes fadeInOut {{
+            0%, 100% {{ opacity: 0.4; }}
+            50% {{ opacity: 0.8; }}
+        }}
+        
+        .reveal-phase {{
+            animation: revealSlide 0.6s ease;
+        }}
+        
+        .reveal-phase.hidden {{
+            display: none;
+        }}
+        
+        @keyframes revealSlide {{
+            0% {{
+                opacity: 0;
+                transform: scale(0.8);
+            }}
+            50% {{
+                transform: scale(1.05);
+            }}
+            100% {{
+                opacity: 1;
+                transform: scale(1);
+            }}
+        }}
 
         .start-btn {{
             padding: 25px 60px;
@@ -581,7 +658,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
     <div class="container" id="slideContainer">
         <!-- Intro Slide -->
-        <div class="slide intro-slide" data-category="intro">
+        <div class="slide intro-slide" data-category="intro" data-no-suspense="true">
             <div class="slide-content">
                 <div class="icon">🎉</div>
                 <h1 class="intro-title">WRAPPED</h1>
@@ -598,8 +675,8 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
     </div>
 
     <nav class="nav">
-        <button onclick="prevSlide()">← Poprzedni</button>
-        <button onclick="nextSlide()">Następny →</button>
+        <button class="nav-btn" onclick="prevSlide()">← Poprzedni</button>
+        <button class="nav-btn" onclick="nextSlide()">Następny →</button>
     </nav>
 
     <script>
@@ -670,6 +747,47 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             const progress = ((currentSlide + 1) / totalSlides) * 100;
             document.getElementById('progress').style.width = progress + '%';
         }}
+        
+        // Track which slides have been revealed
+        const revealedSlides = new Set();
+        
+        function isSlideRevealed(index) {{
+            return revealedSlides.has(index);
+        }}
+        
+        function revealCurrentSlide() {{
+            const slide = slides[currentSlide];
+            const teaser = slide.querySelector('.teaser-phase');
+            const reveal = slide.querySelector('.reveal-phase');
+            
+            // Check if this slide has suspense phases
+            if (!teaser || !reveal) return false;
+            
+            // Check if already revealed
+            if (isSlideRevealed(currentSlide)) return false;
+            
+            // Hide teaser, show reveal
+            teaser.style.display = 'none';
+            reveal.classList.remove('hidden');
+            revealedSlides.add(currentSlide);
+            
+            // Play reveal sound
+            const melodyFn = getCategorySound(currentSlide);
+            if (melodyFn) melodyFn();
+            
+            return true;
+        }}
+        
+        function resetSlidePhases(index) {{
+            const slide = slides[index];
+            const teaser = slide.querySelector('.teaser-phase');
+            const reveal = slide.querySelector('.reveal-phase');
+            
+            if (teaser && reveal && !isSlideRevealed(index)) {{
+                teaser.style.display = 'flex';
+                reveal.classList.add('hidden');
+            }}
+        }}
 
         function showSlide(index) {{
             if (index < 0) index = 0;
@@ -683,8 +801,15 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             updateProgress();
             
-            // Play unique melody for this slide
-            if (oldSlide !== currentSlide) {{
+            // Reset phases for this slide if not revealed
+            resetSlidePhases(currentSlide);
+            
+            // For slides without suspense (intro, summary), play sound directly
+            const slide = slides[currentSlide];
+            const noSuspense = slide.getAttribute('data-no-suspense') === 'true';
+            const hasSuspense = slide.querySelector('.teaser-phase') !== null;
+            
+            if (oldSlide !== currentSlide && (!hasSuspense || isSlideRevealed(currentSlide) || noSuspense)) {{
                 const melodyFn = getCategorySound(currentSlide);
                 if (melodyFn) melodyFn();
             }}
@@ -695,8 +820,29 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                 categoryMelodies['summary']();
             }}
         }}
+        
+        // Handle click/tap on slide to reveal
+        document.getElementById('slideContainer').addEventListener('click', (e) => {{
+            // Don't trigger on navigation buttons
+            if (e.target.closest('.nav-btn') || e.target.closest('.audio-control')) return;
+            
+            const slide = slides[currentSlide];
+            const teaser = slide.querySelector('.teaser-phase');
+            
+            // If slide has teaser and not revealed, reveal it
+            if (teaser && teaser.style.display !== 'none' && !isSlideRevealed(currentSlide)) {{
+                revealCurrentSlide();
+            }}
+        }});
 
         function nextSlide() {{
+            // If current slide has unrevealed teaser, reveal first
+            const slide = slides[currentSlide];
+            const teaser = slide.querySelector('.teaser-phase');
+            if (teaser && teaser.style.display !== 'none' && !isSlideRevealed(currentSlide)) {{
+                revealCurrentSlide();
+                return;
+            }}
             showSlide(currentSlide + 1);
         }}
 
@@ -1052,22 +1198,30 @@ def generate_slides(categories: list[CategoryResult]) -> str:
             slide = f'''
         <div class="slide" data-category="{cat.category_id}">
             <div class="slide-content timeline-slide-content">
-                <span class="icon">{cat.icon}</span>
-                <h2 class="title">{cat.title}</h2>
-                <p class="subtitle">{cat.subtitle}</p>
-                <div class="horizontal-timeline-wrapper">
-                    <div class="timeline-names-row">
-                        {timeline_names}
-                    </div>
-                    <div class="timeline-bar-container">
-                        <div class="timeline-bar">
-                            {timeline_segments}
-                        </div>
-                        <div class="timeline-arrow-head"></div>
-                    </div>
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <p class="subtitle">{cat.subtitle}</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
                 </div>
-                {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
-                {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                <div class="reveal-phase hidden">
+                    <span class="icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <div class="horizontal-timeline-wrapper">
+                        <div class="timeline-names-row">
+                            {timeline_names}
+                        </div>
+                        <div class="timeline-bar-container">
+                            <div class="timeline-bar">
+                                {timeline_segments}
+                            </div>
+                            <div class="timeline-arrow-head"></div>
+                        </div>
+                    </div>
+                    {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
+                    {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                </div>
             </div>
         </div>'''
         elif cat.winners and len(cat.winners) > 1:
@@ -1086,20 +1240,28 @@ def generate_slides(categories: list[CategoryResult]) -> str:
             slide = f'''
         <div class="slide" data-category="{cat.category_id}">
             <div class="slide-content">
-                <span class="icon">{cat.icon}</span>
-                <h2 class="title">{cat.title}</h2>
-                <p class="subtitle">{cat.subtitle}</p>
-                <ul class="top-list">
-                    {list_items}
-                </ul>
-                {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
-                {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <p class="subtitle">{cat.subtitle}</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <ul class="top-list">
+                        {list_items}
+                    </ul>
+                    {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
+                    {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                </div>
             </div>
         </div>'''
         elif cat.category_id == "summary":
-            # Summary slide
+            # Summary slide - no suspense
             slide = f'''
-        <div class="slide intro-slide" data-category="{cat.category_id}">
+        <div class="slide intro-slide" data-category="{cat.category_id}" data-no-suspense="true">
             <div class="slide-content summary-content">
                 <span class="icon">{cat.icon}</span>
                 <h2 class="title">{cat.title}</h2>
@@ -1114,13 +1276,21 @@ def generate_slides(categories: list[CategoryResult]) -> str:
             slide = f'''
         <div class="slide" data-category="{cat.category_id}">
             <div class="slide-content">
-                <span class="icon">{cat.icon}</span>
-                <h2 class="title">{cat.title}</h2>
-                <p class="subtitle">{cat.subtitle}</p>
-                <p class="winner">{cat.winner}</p>
-                {f'<p class="value">{cat.value}</p>' if cat.value else ''}
-                {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
-                {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <p class="subtitle">{cat.subtitle}</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <p class="winner">{cat.winner}</p>
+                    {f'<p class="value">{cat.value}</p>' if cat.value else ''}
+                    {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
+                    {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                </div>
             </div>
         </div>'''
         
