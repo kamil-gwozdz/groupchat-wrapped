@@ -370,19 +370,94 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                 padding: 10px 15px;
             }}
         }}
+
+        /* Start overlay */
+        .start-overlay {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            cursor: pointer;
+        }}
+
+        .start-overlay.hidden {{
+            display: none;
+        }}
+
+        .start-btn {{
+            padding: 25px 60px;
+            font-size: 2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+            box-shadow: 0 10px 40px rgba(240, 147, 251, 0.4);
+            transition: all 0.3s;
+            animation: pulse 2s infinite;
+        }}
+
+        .start-btn:hover {{
+            transform: scale(1.1);
+            box-shadow: 0 15px 50px rgba(240, 147, 251, 0.6);
+        }}
+
+        @keyframes pulse {{
+            0%, 100% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.05); }}
+        }}
+
+        .start-icon {{
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }}
+
+        .start-title {{
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #f093fb, #f5576c, #667eea, #4facfe);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientMove 5s ease infinite;
+        }}
+
+        .start-subtitle {{
+            font-size: 1.2rem;
+            opacity: 0.7;
+            margin-bottom: 40px;
+        }}
     </style>
 </head>
 <body>
+    <div class="start-overlay" id="startOverlay" onclick="startPresentation()">
+        <div class="start-icon">🎉</div>
+        <h1 class="start-title">WRAPPED 2025</h1>
+        <p class="start-subtitle">{result.conversation_title}</p>
+        <button class="start-btn">🎵 Start z muzyką</button>
+    </div>
+
     <div class="progress" id="progress"></div>
-    <button class="audio-control" id="audioControl" onclick="toggleAudio()">🔊</button>
+    <button class="audio-control" id="audioControl" onclick="toggleAudio()">🔇</button>
     
-    <audio id="backgroundMusic" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="https://cdn.pixabay.com/audio/2022/10/18/audio_16e07a8c0c.mp3" type="audio/mpeg">
     </audio>
 
     <div class="container" id="slideContainer">
         <!-- Intro Slide -->
-        <div class="slide intro-slide">
+        <div class="slide intro-slide" data-category="intro">
             <div class="slide-content">
                 <div class="icon">🎉</div>
                 <h1 class="intro-title">WRAPPED</h1>
@@ -420,6 +495,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             if (index < 0) index = 0;
             if (index >= totalSlides) index = totalSlides - 1;
             
+            const oldSlide = currentSlide;
             currentSlide = index;
             slides.forEach((slide, i) => {{
                 slide.style.display = i === currentSlide ? 'flex' : 'none';
@@ -427,9 +503,16 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             updateProgress();
             
+            // Play sound effect for this slide
+            if (oldSlide !== currentSlide) {{
+                const sound = getCategorySound(currentSlide);
+                playSound(sound);
+            }}
+            
             // Trigger confetti on last slide
             if (currentSlide === totalSlides - 1) {{
                 createConfetti();
+                playSound('fanfare');
             }}
         }}
 
@@ -452,6 +535,29 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             isPlaying = !isPlaying;
         }}
 
+        function startPresentation() {{
+            document.getElementById('startOverlay').classList.add('hidden');
+            // Try multiple audio sources
+            audio.volume = 0.5;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {{
+                playPromise.then(() => {{
+                    audioBtn.textContent = '🔊';
+                    isPlaying = true;
+                }}).catch(e => {{
+                    console.log('Audio play failed:', e);
+                    // Still enable sound effects even if background music fails
+                    isPlaying = true;
+                    audioBtn.textContent = '🔊';
+                }});
+            }}
+            // Resume audio context for sound effects
+            if (audioContext.state === 'suspended') {{
+                audioContext.resume();
+            }}
+            isPlaying = true;
+        }}
+
         function createConfetti() {{
             const colors = ['#f093fb', '#f5576c', '#667eea', '#4facfe', '#43e97b', '#ffd700'];
             
@@ -469,6 +575,134 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                     setTimeout(() => confetti.remove(), 5000);
                 }}, i * 50);
             }}
+        }}
+
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {{
+            if (!isPlaying) return; // Only play sounds if audio is enabled
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {{
+                case 'whoosh':
+                    // Whoosh sound for slide transition
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                    
+                case 'reveal':
+                    // Reveal sound for winner announcement
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                    
+                case 'fanfare':
+                    // Fanfare for final slide
+                    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                    notes.forEach((freq, i) => {{
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'triangle';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.4);
+                        osc.start(audioContext.currentTime + i * 0.15);
+                        osc.stop(audioContext.currentTime + i * 0.15 + 0.4);
+                    }});
+                    return;
+                    
+                case 'pop':
+                    // Pop sound
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.05);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.05);
+                    break;
+                    
+                case 'drum':
+                    // Drum roll effect
+                    oscillator.type = 'square';
+                    oscillator.frequency.value = 150;
+                    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+                    for (let i = 0; i < 10; i++) {{
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.05);
+                        gainNode.gain.setValueAtTime(0.02, audioContext.currentTime + i * 0.05 + 0.025);
+                    }}
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.6);
+                    break;
+                    
+                case 'sparkle':
+                    // Sparkle/magic sound
+                    const sparkleNotes = [1200, 1400, 1600, 1800, 2000];
+                    sparkleNotes.forEach((freq, i) => {{
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.08, audioContext.currentTime + i * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.08 + 0.2);
+                        osc.start(audioContext.currentTime + i * 0.08);
+                        osc.stop(audioContext.currentTime + i * 0.08 + 0.2);
+                    }});
+                    return;
+            }}
+        }}
+        
+        // Category-specific sounds
+        const categorySounds = {{
+            'night_owl': 'sparkle',
+            'busiest_day': 'drum',
+            'prodigal_son': 'reveal',
+            'spam_king': 'fanfare',
+            'typing_machine': 'pop',
+            'poet': 'sparkle',
+            'dictionary': 'pop',
+            'ghost': 'whoosh',
+            'starter': 'reveal',
+            'closer': 'whoosh',
+            'reactor': 'sparkle',
+            'celebrity': 'fanfare',
+            'viral_message': 'fanfare',
+            'paparazzo': 'pop',
+            'comedian': 'pop',
+            'detective': 'reveal',
+            'link_maniac': 'pop',
+            'emoji_king': 'sparkle',
+            'writer': 'reveal',
+            'peak_hour': 'drum',
+            'summary': 'fanfare'
+        }};
+        
+        function getCategorySound(slideIndex) {{
+            const slide = slides[slideIndex];
+            const categoryId = slide.getAttribute('data-category');
+            return categorySounds[categoryId] || 'whoosh';
         }}
 
         // Keyboard navigation
@@ -535,7 +769,7 @@ def generate_slides(categories: list[CategoryResult]) -> str:
                     </li>'''
             
             slide = f'''
-        <div class="slide">
+        <div class="slide" data-category="{cat.category_id}">
             <div class="slide-content">
                 <span class="icon">{cat.icon}</span>
                 <h2 class="title">{cat.title}</h2>
@@ -550,7 +784,7 @@ def generate_slides(categories: list[CategoryResult]) -> str:
         elif cat.category_id == "summary":
             # Summary slide
             slide = f'''
-        <div class="slide intro-slide">
+        <div class="slide intro-slide" data-category="{cat.category_id}">
             <div class="slide-content summary-content">
                 <span class="icon">{cat.icon}</span>
                 <h2 class="title">{cat.title}</h2>
@@ -563,7 +797,7 @@ def generate_slides(categories: list[CategoryResult]) -> str:
         else:
             # Single winner style
             slide = f'''
-        <div class="slide">
+        <div class="slide" data-category="{cat.category_id}">
             <div class="slide-content">
                 <span class="icon">{cat.icon}</span>
                 <h2 class="title">{cat.title}</h2>
