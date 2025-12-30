@@ -489,6 +489,15 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             line-height: 2;
         }}
 
+        /* Text wrapping for extra-info */
+        .extra-info {{
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+            hyphens: auto;
+        }}
+
         /* Network Graph styles */
         .network-graph-container {{
             width: 100%;
@@ -498,12 +507,13 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             position: relative;
             background: rgba(255,255,255,0.05);
             border-radius: 20px;
-            overflow: hidden;
+            overflow: visible;
         }}
 
         .network-graph-svg {{
             width: 100%;
             height: 100%;
+            overflow: visible;
         }}
 
         .graph-node {{
@@ -534,14 +544,65 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             stroke-linecap: round;
             opacity: 0.6;
             transition: opacity 0.3s;
+            cursor: pointer;
         }}
 
         .graph-edge:hover {{
+            opacity: 1;
+            stroke-width: 10 !important;
+        }}
+
+        .graph-edge-hitarea {{
+            stroke: transparent;
+            stroke-width: 20;
+            cursor: pointer;
+            fill: none;
+        }}
+
+        .graph-self-loop {{
+            fill: none;
+            opacity: 0.6;
+            cursor: pointer;
+        }}
+
+        .graph-self-loop:hover {{
             opacity: 1;
         }}
 
         .graph-arrow {{
             fill: rgba(255,255,255,0.8);
+        }}
+
+        .graph-tooltip {{
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 280px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+            text-align: left;
+            line-height: 1.5;
+        }}
+
+        .graph-tooltip.visible {{
+            opacity: 1;
+        }}
+
+        .graph-tooltip-title {{
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }}
+
+        .graph-tooltip-emoji {{
+            margin-top: 8px;
+            font-size: 1.1rem;
         }}
 
         .graph-legend {{
@@ -1391,6 +1452,70 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             }}
         }}
 
+        // Graph tooltip functions
+        function showGraphTooltip(event, graphId, edgeIdx) {{
+            const data = window.graphData[graphId][edgeIdx];
+            const tooltip = document.getElementById('tooltip-' + graphId);
+            const container = document.getElementById('graph-container-' + graphId);
+            
+            if (!tooltip || !data) return;
+            
+            let html = '<div class="graph-tooltip-title">';
+            if (data.isSelf) {{
+                html += data.from + ' → ' + data.from + ' (sam sobie)';
+            }} else {{
+                html += data.from + ' → ' + data.to;
+            }}
+            html += '</div>';
+            html += '<div><strong>' + data.weight + '</strong> ' + (graphId === 'reactions_graph' ? 'reakcji' : 'oznaczeń') + '</div>';
+            
+            if (data.emojis) {{
+                html += '<div class="graph-tooltip-emoji">' + data.emojis + '</div>';
+            }}
+            
+            tooltip.innerHTML = html;
+            tooltip.classList.add('visible');
+            
+            // Position tooltip
+            const rect = container.getBoundingClientRect();
+            const svgRect = container.querySelector('svg').getBoundingClientRect();
+            
+            let x, y;
+            if (event.touches) {{
+                x = event.touches[0].clientX - rect.left;
+                y = event.touches[0].clientY - rect.top;
+            }} else {{
+                x = event.clientX - rect.left;
+                y = event.clientY - rect.top;
+            }}
+            
+            // Adjust position to stay within container
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (x + tooltipRect.width > rect.width - 10) {{
+                x = rect.width - tooltipRect.width - 10;
+            }}
+            if (y + tooltipRect.height > rect.height - 10) {{
+                y = y - tooltipRect.height - 10;
+            }}
+            
+            tooltip.style.left = Math.max(10, x) + 'px';
+            tooltip.style.top = Math.max(10, y) + 'px';
+        }}
+        
+        function hideGraphTooltip(graphId) {{
+            const tooltip = document.getElementById('tooltip-' + graphId);
+            if (tooltip) {{
+                tooltip.classList.remove('visible');
+            }}
+        }}
+        
+        // Close tooltip when clicking elsewhere
+        document.addEventListener('click', function(e) {{
+            if (!e.target.closest('.graph-edge') && !e.target.closest('.graph-self-loop') && !e.target.closest('.graph-edge-hitarea')) {{
+                document.querySelectorAll('.graph-tooltip').forEach(t => t.classList.remove('visible'));
+            }}
+        }});
+
         // Initialize
         showSlide(0);
         updateProgress();
@@ -1405,8 +1530,10 @@ def generate_graph_slide(cat: CategoryResult) -> str:
     """Generate HTML for a network graph slide (mentions or reactions)."""
     import json
     import math
+    import html
     
-    edges = cat.winners  # List of dicts with 'from', 'to', 'weight'
+    edges = cat.winners  # List of dicts with 'from', 'to', 'weight', and optionally 'emojis'
+    is_reactions = cat.category_id == "reactions_graph"
     
     # Collect unique nodes
     nodes_set = set()
@@ -1416,6 +1543,9 @@ def generate_graph_slide(cat: CategoryResult) -> str:
     
     nodes = list(nodes_set)
     node_colors = ['#f093fb', '#667eea', '#4facfe', '#43e97b', '#f5576c', '#ffd700', '#ff6b6b', '#48dbfb', '#a29bfe', '#fd79a8']
+    
+    # Create node index map
+    node_idx_map = {node: i for i, node in enumerate(nodes)}
     
     # Calculate node positions in a circle
     center_x, center_y = 350, 225
@@ -1430,41 +1560,108 @@ def generate_graph_slide(cat: CategoryResult) -> str:
     # Calculate max weight for scaling
     max_weight = max(edge['weight'] for edge in edges) if edges else 1
     
+    # Unique ID for this graph
+    graph_id = cat.category_id
+    
     # Generate SVG edges (draw edges first, then nodes on top)
     edges_svg = ""
-    for edge in edges:
+    edge_data = []  # For JavaScript tooltip data
+    
+    for idx, edge in enumerate(edges):
         from_pos = node_positions[edge['from']]
         to_pos = node_positions[edge['to']]
         weight = edge['weight']
+        is_self_loop = edge['from'] == edge['to']
         
-        # Scale stroke width based on weight (1-8 px)
-        stroke_width = max(1, min(8, (weight / max_weight) * 8))
-        opacity = 0.3 + (weight / max_weight) * 0.5
+        # Scale stroke width based on weight (2-10 px)
+        stroke_width = max(2, min(10, (weight / max_weight) * 10))
+        opacity = 0.4 + (weight / max_weight) * 0.4
         
         # Get color based on 'from' node
-        from_idx = nodes.index(edge['from'])
+        from_idx = node_idx_map[edge['from']]
         color = node_colors[from_idx % len(node_colors)]
         
-        # Calculate arrow position (shorter line for arrowhead)
-        dx = to_pos[0] - from_pos[0]
-        dy = to_pos[1] - from_pos[1]
-        dist = math.sqrt(dx*dx + dy*dy)
-        if dist > 0:
-            # Shorten the line to not overlap with node circle
-            shorten = 35
-            end_x = to_pos[0] - (dx / dist) * shorten
-            end_y = to_pos[1] - (dy / dist) * shorten
-            start_x = from_pos[0] + (dx / dist) * 30
-            start_y = from_pos[1] + (dy / dist) * 30
-        else:
-            end_x, end_y = to_pos
-            start_x, start_y = from_pos
+        # Build tooltip data
+        from_name = edge['from'].split()[0] if edge['from'] else edge['from']
+        to_name = edge['to'].split()[0] if edge['to'] else edge['to']
         
-        edges_svg += f'''
+        tooltip_data = {
+            'from': from_name,
+            'to': to_name,
+            'weight': weight,
+            'isSelf': is_self_loop
+        }
+        
+        if is_reactions and 'emojis' in edge and edge['emojis']:
+            emoji_str = ' '.join([f"{e}×{c}" for e, c in edge['emojis'][:5]])
+            tooltip_data['emojis'] = emoji_str
+        
+        edge_data.append(tooltip_data)
+        
+        if is_self_loop:
+            # Draw a self-loop (curved path that returns to the same node)
+            x, y = from_pos
+            # Loop above the node
+            loop_radius = 35
+            # Calculate position for the loop (outward from center)
+            dx = x - center_x
+            dy = y - center_y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 0:
+                nx, ny = dx/dist, dy/dist
+            else:
+                nx, ny = 0, -1
+            
+            # Control points for the loop
+            loop_cx = x + nx * (30 + loop_radius)
+            loop_cy = y + ny * (30 + loop_radius)
+            
+            # Arc path
+            start_angle = math.atan2(ny, nx) - 0.8
+            end_angle = math.atan2(ny, nx) + 0.8
+            
+            start_x = x + 28 * math.cos(start_angle)
+            start_y = y + 28 * math.sin(start_angle)
+            end_x = x + 28 * math.cos(end_angle)
+            end_y = y + 28 * math.sin(end_angle)
+            
+            # Calculate arrow direction for self-loop
+            arrow_angle = end_angle + 0.3
+            arrow_x = x + 28 * math.cos(arrow_angle)
+            arrow_y = y + 28 * math.sin(arrow_angle)
+            
+            edges_svg += f'''
+            <path class="graph-self-loop" d="M {start_x:.1f} {start_y:.1f} Q {loop_cx:.1f} {loop_cy:.1f} {end_x:.1f} {end_y:.1f}"
+                  stroke="{color}" stroke-width="{stroke_width:.1f}" style="opacity: {opacity:.2f};"
+                  marker-end="url(#arrowhead-{graph_id})"
+                  data-edge-idx="{idx}" onclick="showGraphTooltip(event, '{graph_id}', {idx})" 
+                  onmouseenter="showGraphTooltip(event, '{graph_id}', {idx})" onmouseleave="hideGraphTooltip('{graph_id}')"/>'''
+        else:
+            # Regular edge with arrow
+            dx = to_pos[0] - from_pos[0]
+            dy = to_pos[1] - from_pos[1]
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 0:
+                # Shorten the line to not overlap with node circle
+                shorten = 35
+                end_x = to_pos[0] - (dx / dist) * shorten
+                end_y = to_pos[1] - (dy / dist) * shorten
+                start_x = from_pos[0] + (dx / dist) * 30
+                start_y = from_pos[1] + (dy / dist) * 30
+            else:
+                end_x, end_y = to_pos
+                start_x, start_y = from_pos
+            
+            # Hitarea for easier clicking
+            edges_svg += f'''
+            <line class="graph-edge-hitarea" x1="{start_x:.1f}" y1="{start_y:.1f}" x2="{end_x:.1f}" y2="{end_y:.1f}"
+                  data-edge-idx="{idx}" onclick="showGraphTooltip(event, '{graph_id}', {idx})" 
+                  onmouseenter="showGraphTooltip(event, '{graph_id}', {idx})" onmouseleave="hideGraphTooltip('{graph_id}')"/>
             <line class="graph-edge" x1="{start_x:.1f}" y1="{start_y:.1f}" x2="{end_x:.1f}" y2="{end_y:.1f}" 
-                  stroke="{color}" stroke-width="{stroke_width:.1f}" style="opacity: {opacity:.2f};">
-                <title>{edge['from']} → {edge['to']}: {weight}x</title>
-            </line>'''
+                  stroke="{color}" stroke-width="{stroke_width:.1f}" style="opacity: {opacity:.2f};"
+                  marker-end="url(#arrowhead-{graph_id})"
+                  data-edge-idx="{idx}" onclick="showGraphTooltip(event, '{graph_id}', {idx})" 
+                  onmouseenter="showGraphTooltip(event, '{graph_id}', {idx})" onmouseleave="hideGraphTooltip('{graph_id}')"/>'''
     
     # Generate SVG nodes
     nodes_svg = ""
@@ -1480,8 +1677,11 @@ def generate_graph_slide(cat: CategoryResult) -> str:
         nodes_svg += f'''
             <g class="graph-node" transform="translate({x:.1f}, {y:.1f})">
                 <circle r="28" fill="{color}"/>
-                <text y="1">{display_name}</text>
+                <text y="1">{html.escape(display_name)}</text>
             </g>'''
+    
+    # JSON encode edge data for JavaScript
+    edge_data_json = json.dumps(edge_data, ensure_ascii=False)
     
     # Assemble the slide
     slide = f'''
@@ -1497,25 +1697,30 @@ def generate_graph_slide(cat: CategoryResult) -> str:
                 <div class="reveal-phase hidden">
                     <span class="icon">{cat.icon}</span>
                     <h2 class="title">{cat.title}</h2>
-                    <div class="network-graph-container">
+                    <div class="network-graph-container" id="graph-container-{graph_id}">
                         <svg class="network-graph-svg" viewBox="0 0 700 450">
                             <defs>
-                                <marker id="arrowhead-{cat.category_id}" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
-                                    <polygon points="0 0, 6 2, 0 4" class="graph-arrow" fill="rgba(255,255,255,0.8)"/>
+                                <marker id="arrowhead-{graph_id}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" class="graph-arrow" fill="rgba(255,255,255,0.9)"/>
                                 </marker>
                             </defs>
                             {edges_svg}
                             {nodes_svg}
                         </svg>
+                        <div class="graph-tooltip" id="tooltip-{graph_id}"></div>
                         <div class="graph-legend">
-                            Grubość linii = liczba interakcji
+                            Kliknij strzałkę aby zobaczyć szczegóły
                         </div>
                     </div>
                     {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
                     {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
                 </div>
             </div>
-        </div>'''
+        </div>
+        <script>
+            window.graphData = window.graphData || {{}};
+            window.graphData['{graph_id}'] = {edge_data_json};
+        </script>'''
     
     return slide
 

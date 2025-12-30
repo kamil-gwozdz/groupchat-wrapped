@@ -255,6 +255,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     # Graph tracking: who mentions whom, who reacts to whom
     mentions_graph: dict[str, Counter[str]] = defaultdict(Counter)  # sender -> {mentioned_person: count}
     reactions_graph: dict[str, Counter[str]] = defaultdict(Counter)  # reactor -> {message_author: count}
+    reactions_emoji_graph: dict[tuple[str, str], Counter[str]] = defaultdict(Counter)  # (reactor, target) -> {emoji: count}
     
     # xD tracking
     xd_per_person: Counter[str] = Counter()
@@ -375,8 +376,8 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
                     pass  # Keep original actor name if encoding fails
                 reactions_given[actor] += 1
                 # Track reaction graph: who (actor) reacts to whose (sender) messages
-                if actor != sender:  # Don't count self-reactions
-                    reactions_graph[actor][sender] += 1
+                # Include self-reactions (shown as loops on the graph)
+                reactions_graph[actor][sender] += 1
             reactions_received[sender] += 1
             # Decode reaction emoji
             reaction_emoji = reaction.get("reaction", "")
@@ -385,6 +386,9 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             except (UnicodeEncodeError, UnicodeDecodeError):
                 pass
             msg_reactions.append(reaction_emoji)
+            # Track emoji breakdown for reaction graph
+            if actor and reaction_emoji:
+                reactions_emoji_graph[(actor, sender)][reaction_emoji] += 1
         
         # Track most reacted message
         if len(msg.reactions) > 0:
@@ -865,10 +869,14 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
         reactions_edges = []
         for reactor, targets in reactions_graph.items():
             for target, count in targets.items():
+                # Get emoji breakdown for this edge
+                emoji_counts = reactions_emoji_graph.get((reactor, target), Counter())
+                emoji_breakdown = emoji_counts.most_common(5)  # Top 5 emojis
                 reactions_edges.append({
                     'from': reactor,
                     'to': target,
-                    'weight': count
+                    'weight': count,
+                    'emojis': emoji_breakdown  # List of (emoji, count) tuples
                 })
         
         if reactions_edges:
