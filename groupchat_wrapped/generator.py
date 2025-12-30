@@ -489,6 +489,72 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             line-height: 2;
         }}
 
+        /* Network Graph styles */
+        .network-graph-container {{
+            width: 100%;
+            max-width: 700px;
+            height: 450px;
+            margin: 20px auto;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            overflow: hidden;
+        }}
+
+        .network-graph-svg {{
+            width: 100%;
+            height: 100%;
+        }}
+
+        .graph-node {{
+            cursor: pointer;
+            transition: all 0.3s;
+        }}
+
+        .graph-node:hover {{
+            filter: brightness(1.3);
+        }}
+
+        .graph-node circle {{
+            stroke: rgba(255,255,255,0.3);
+            stroke-width: 2;
+        }}
+
+        .graph-node text {{
+            fill: white;
+            font-size: 10px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }}
+
+        .graph-edge {{
+            stroke-linecap: round;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }}
+
+        .graph-edge:hover {{
+            opacity: 1;
+        }}
+
+        .graph-arrow {{
+            fill: rgba(255,255,255,0.8);
+        }}
+
+        .graph-legend {{
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }}
+
         /* Responsive - Tablets */
         @media (max-width: 768px) {{
             .slide-content {{
@@ -1236,6 +1302,44 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                 }}, 700);
             }},
             
+            // 🏷️ Sieć Oznaczeń - network connection sounds
+            'mentions_graph': () => {{
+                // Digital network pings
+                [0, 100, 200, 350, 500].forEach((delay, i) => {{
+                    setTimeout(() => {{
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = 600 + i * 150;
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.15);
+                    }}, delay);
+                }});
+            }},
+            
+            // ❤️ Sieć Reakcji - love connection sounds
+            'reactions_graph': () => {{
+                // Heartbeat with rising tones
+                [0, 200, 500, 700].forEach((delay, i) => {{
+                    setTimeout(() => {{
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = 300 + i * 100;
+                        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.2);
+                    }}, delay);
+                }});
+            }},
+            
             // 📊 Podsumowanie - grand finale fanfare
             'summary': () => {{
                 playMelody([523, 659, 784, 1047, 1319, 1568], 'triangle', 0.25, 0.12);
@@ -1297,6 +1401,125 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
     output_path.write_text(html_content, encoding='utf-8')
 
 
+def generate_graph_slide(cat: CategoryResult) -> str:
+    """Generate HTML for a network graph slide (mentions or reactions)."""
+    import json
+    import math
+    
+    edges = cat.winners  # List of dicts with 'from', 'to', 'weight'
+    
+    # Collect unique nodes
+    nodes_set = set()
+    for edge in edges:
+        nodes_set.add(edge['from'])
+        nodes_set.add(edge['to'])
+    
+    nodes = list(nodes_set)
+    node_colors = ['#f093fb', '#667eea', '#4facfe', '#43e97b', '#f5576c', '#ffd700', '#ff6b6b', '#48dbfb', '#a29bfe', '#fd79a8']
+    
+    # Calculate node positions in a circle
+    center_x, center_y = 350, 225
+    radius = 160
+    node_positions = {}
+    for i, node in enumerate(nodes):
+        angle = (2 * math.pi * i) / len(nodes) - math.pi / 2
+        x = center_x + radius * math.cos(angle)
+        y = center_y + radius * math.sin(angle)
+        node_positions[node] = (x, y)
+    
+    # Calculate max weight for scaling
+    max_weight = max(edge['weight'] for edge in edges) if edges else 1
+    
+    # Generate SVG edges (draw edges first, then nodes on top)
+    edges_svg = ""
+    for edge in edges:
+        from_pos = node_positions[edge['from']]
+        to_pos = node_positions[edge['to']]
+        weight = edge['weight']
+        
+        # Scale stroke width based on weight (1-8 px)
+        stroke_width = max(1, min(8, (weight / max_weight) * 8))
+        opacity = 0.3 + (weight / max_weight) * 0.5
+        
+        # Get color based on 'from' node
+        from_idx = nodes.index(edge['from'])
+        color = node_colors[from_idx % len(node_colors)]
+        
+        # Calculate arrow position (shorter line for arrowhead)
+        dx = to_pos[0] - from_pos[0]
+        dy = to_pos[1] - from_pos[1]
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 0:
+            # Shorten the line to not overlap with node circle
+            shorten = 35
+            end_x = to_pos[0] - (dx / dist) * shorten
+            end_y = to_pos[1] - (dy / dist) * shorten
+            start_x = from_pos[0] + (dx / dist) * 30
+            start_y = from_pos[1] + (dy / dist) * 30
+        else:
+            end_x, end_y = to_pos
+            start_x, start_y = from_pos
+        
+        edges_svg += f'''
+            <line class="graph-edge" x1="{start_x:.1f}" y1="{start_y:.1f}" x2="{end_x:.1f}" y2="{end_y:.1f}" 
+                  stroke="{color}" stroke-width="{stroke_width:.1f}" style="opacity: {opacity:.2f};">
+                <title>{edge['from']} → {edge['to']}: {weight}x</title>
+            </line>'''
+    
+    # Generate SVG nodes
+    nodes_svg = ""
+    for i, node in enumerate(nodes):
+        x, y = node_positions[node]
+        color = node_colors[i % len(node_colors)]
+        
+        # Get first name for display (shortened)
+        display_name = node.split()[0] if node else node
+        if len(display_name) > 8:
+            display_name = display_name[:7] + "."
+        
+        nodes_svg += f'''
+            <g class="graph-node" transform="translate({x:.1f}, {y:.1f})">
+                <circle r="28" fill="{color}"/>
+                <text y="1">{display_name}</text>
+            </g>'''
+    
+    # Assemble the slide
+    slide = f'''
+        <div class="slide" data-category="{cat.category_id}">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <p class="subtitle">{cat.subtitle}</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">{cat.icon}</span>
+                    <h2 class="title">{cat.title}</h2>
+                    <div class="network-graph-container">
+                        <svg class="network-graph-svg" viewBox="0 0 700 450">
+                            <defs>
+                                <marker id="arrowhead-{cat.category_id}" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                                    <polygon points="0 0, 6 2, 0 4" class="graph-arrow" fill="rgba(255,255,255,0.8)"/>
+                                </marker>
+                            </defs>
+                            {edges_svg}
+                            {nodes_svg}
+                        </svg>
+                        <div class="graph-legend">
+                            Grubość linii = liczba interakcji
+                        </div>
+                    </div>
+                    {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
+                    {f'<p class="fun-fact">{cat.fun_fact}</p>' if cat.fun_fact else ''}
+                </div>
+            </div>
+        </div>'''
+    
+    return slide
+
+
 def generate_slides(categories: list[CategoryResult]) -> str:
     """Generate HTML for all category slides."""
     slides_html = []
@@ -1354,6 +1577,9 @@ def generate_slides(categories: list[CategoryResult]) -> str:
                 </div>
             </div>
         </div>'''
+        elif cat.category_id in ("mentions_graph", "reactions_graph") and cat.winners:
+            # Network graph visualization
+            slide = generate_graph_slide(cat)
         elif cat.winners and len(cat.winners) > 1:
             # Top list style
             list_items = ""

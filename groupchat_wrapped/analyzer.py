@@ -252,6 +252,10 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
     favorite_emoji_per_person: dict[str, Counter[str]] = defaultdict(Counter)
     most_reacted_message: tuple[Message, int, list[str]] | None = None  # (message, count, reactions)
     
+    # Graph tracking: who mentions whom, who reacts to whom
+    mentions_graph: dict[str, Counter[str]] = defaultdict(Counter)  # sender -> {mentioned_person: count}
+    reactions_graph: dict[str, Counter[str]] = defaultdict(Counter)  # reactor -> {message_author: count}
+    
     # xD tracking
     xd_per_person: Counter[str] = Counter()
     longest_xd: tuple[str, str, str] | None = None  # (xd_text, sender, message_content)
@@ -333,6 +337,20 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
                 # Track the longest xD
                 if longest_xd is None or len(xd) > len(longest_xd[0]):
                     longest_xd = (xd, sender, msg.content)
+            
+            # Mention detection: check if message contains other participants' names
+            content_lower = msg.content.lower()
+            for participant in participants:
+                if participant == sender:
+                    continue  # Skip self-mentions
+                # Get first name for matching (more common in casual chat)
+                first_name = participant.split()[0].lower() if participant else ""
+                full_name_lower = participant.lower()
+                # Check for @mention or name mention
+                if (f"@{first_name}" in content_lower or 
+                    f"@{full_name_lower}" in content_lower or
+                    (len(first_name) >= 3 and first_name in content_lower.split())):
+                    mentions_graph[sender][participant] += 1
         
         # Media types
         if msg.message_type == "photo":
@@ -356,6 +374,9 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
                 except (UnicodeEncodeError, UnicodeDecodeError):
                     pass  # Keep original actor name if encoding fails
                 reactions_given[actor] += 1
+                # Track reaction graph: who (actor) reacts to whose (sender) messages
+                if actor != sender:  # Don't count self-reactions
+                    reactions_graph[actor][sender] += 1
             reactions_received[sender] += 1
             # Decode reaction emoji
             reaction_emoji = reaction.get("reaction", "")
@@ -798,7 +819,87 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
             fun_fact=f"Najdłuższa nazwa: {max(timeline_entries, key=lambda x: x['days'])['days']} dni" if timeline_entries else None
         ))
     
-    # 21. Statystyki ogólne
+    # 21. Graf oznaczania - kto kogo oznacza
+    if mentions_graph:
+        # Convert to list of edges for the graph
+        mentions_edges = []
+        for sender, targets in mentions_graph.items():
+            for target, count in targets.items():
+                mentions_edges.append({
+                    'from': sender,
+                    'to': target,
+                    'weight': count
+                })
+        
+        if mentions_edges:
+            # Sort by weight and take top edges
+            mentions_edges.sort(key=lambda x: x['weight'], reverse=True)
+            total_mentions = sum(e['weight'] for e in mentions_edges)
+            
+            # Find who mentions the most people
+            mentions_given_total = {sender: sum(targets.values()) for sender, targets in mentions_graph.items()}
+            top_mentioner = max(mentions_given_total.items(), key=lambda x: x[1]) if mentions_given_total else None
+            
+            # Find who is mentioned the most
+            mentioned_count: Counter[str] = Counter()
+            for sender, targets in mentions_graph.items():
+                for target, count in targets.items():
+                    mentioned_count[target] += count
+            top_mentioned = mentioned_count.most_common(1)[0] if mentioned_count else None
+            
+            categories.append(CategoryResult(
+                category_id="mentions_graph",
+                title="🏷️ Sieć Oznaczeń",
+                subtitle="Kto kogo oznacza w rozmowach",
+                icon="📢",
+                winner=top_mentioner[0] if top_mentioner else None,
+                winners=mentions_edges[:30],  # Top 30 edges for the graph
+                value=total_mentions,
+                extra_info=f"Łącznie {total_mentions} oznaczeń",
+                fun_fact=f"Najczęściej oznaczany: {top_mentioned[0]} ({top_mentioned[1]}x)" if top_mentioned else None
+            ))
+    
+    # 22. Graf reakcji - kto komu daje reakcje
+    if reactions_graph:
+        # Convert to list of edges for the graph
+        reactions_edges = []
+        for reactor, targets in reactions_graph.items():
+            for target, count in targets.items():
+                reactions_edges.append({
+                    'from': reactor,
+                    'to': target,
+                    'weight': count
+                })
+        
+        if reactions_edges:
+            # Sort by weight and take top edges
+            reactions_edges.sort(key=lambda x: x['weight'], reverse=True)
+            total_reactions = sum(e['weight'] for e in reactions_edges)
+            
+            # Find top reaction giver
+            reactions_given_total = {reactor: sum(targets.values()) for reactor, targets in reactions_graph.items()}
+            top_reactor = max(reactions_given_total.items(), key=lambda x: x[1]) if reactions_given_total else None
+            
+            # Find top reaction receiver
+            reaction_received_from_graph: Counter[str] = Counter()
+            for reactor, targets in reactions_graph.items():
+                for target, count in targets.items():
+                    reaction_received_from_graph[target] += count
+            top_receiver = reaction_received_from_graph.most_common(1)[0] if reaction_received_from_graph else None
+            
+            categories.append(CategoryResult(
+                category_id="reactions_graph",
+                title="❤️ Sieć Reakcji",
+                subtitle="Kto komu daje reakcje",
+                icon="💕",
+                winner=top_reactor[0] if top_reactor else None,
+                winners=reactions_edges[:30],  # Top 30 edges for the graph
+                value=total_reactions,
+                extra_info=f"Łącznie {total_reactions} reakcji między osobami",
+                fun_fact=f"Najwięcej reakcji dostaje: {top_receiver[0]} ({top_receiver[1]}x)" if top_receiver else None
+            ))
+    
+    # 23. Statystyki ogólne
     total_days = (messages[-1].timestamp - messages[0].timestamp).days + 1
     avg_per_day = len(messages) / total_days if total_days > 0 else 0
     
