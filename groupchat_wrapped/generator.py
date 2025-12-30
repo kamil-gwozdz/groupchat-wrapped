@@ -18,6 +18,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
     <title>{result.conversation_title} - Wrapped 2025</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
     <style>
         * {{
             margin: 0;
@@ -251,14 +252,39 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             width: calc(100% - 35px);
             margin-bottom: 0;
             align-items: flex-end;
+            overflow: visible;
+        }}
+        
+        .timeline-names-above {{
+            align-items: flex-end;
+        }}
+        
+        .timeline-names-below {{
+            align-items: flex-start;
+            margin-top: 0;
+        }}
+        
+        .timeline-names-below .timeline-name-entry {{
+            flex-direction: column-reverse;
+        }}
+        
+        .timeline-names-below .name-connector {{
+            margin-bottom: 0;
+        }}
+        
+        .timeline-name-empty {{
+            visibility: hidden;
+            height: 0;
+            min-height: 0;
         }}
         
         .timeline-name-entry {{
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 50px;
-            padding: 0 2px;
+            min-width: 30px;
+            padding: 0 1px;
+            overflow: visible;
         }}
         
         .name-connector {{
@@ -271,22 +297,22 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             background: rgba(255,255,255,0.1);
             border: 2px solid;
             border-radius: 10px;
-            padding: 6px 10px;
+            padding: 4px 8px;
             text-align: center;
-            width: 100%;
             backdrop-filter: blur(5px);
             margin-bottom: 0;
+            white-space: nowrap;
+            width: auto;
+            min-width: auto;
         }}
         
         .name-text {{
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            line-height: 1.3;
-            white-space: normal;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            hyphens: auto;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: visible;
         }}
         
         .name-date {{
@@ -498,79 +524,26 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             hyphens: auto;
         }}
 
-        /* Network Graph styles */
+        /* Network Graph styles - Cytoscape.js */
         .network-graph-container {{
             width: 100%;
-            max-width: 700px;
-            height: 450px;
+            max-width: 600px;
+            height: 400px;
             margin: 20px auto;
             position: relative;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.08);
             border-radius: 20px;
             overflow: visible;
         }}
 
-        .network-graph-svg {{
+        .cytoscape-graph {{
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            overflow: visible;
-        }}
-
-        .graph-node {{
-            cursor: pointer;
-            transition: all 0.3s;
-        }}
-
-        .graph-node:hover {{
-            filter: brightness(1.3);
-        }}
-
-        .graph-node circle {{
-            stroke: rgba(255,255,255,0.3);
-            stroke-width: 2;
-        }}
-
-        .graph-node text {{
-            fill: white;
-            font-size: 10px;
-            font-weight: 600;
-            text-anchor: middle;
-            dominant-baseline: middle;
-            pointer-events: none;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }}
-
-        .graph-edge {{
-            stroke-linecap: round;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-            cursor: pointer;
-        }}
-
-        .graph-edge:hover {{
-            opacity: 1;
-            stroke-width: 10 !important;
-        }}
-
-        .graph-edge-hitarea {{
-            stroke: transparent;
-            stroke-width: 20;
-            cursor: pointer;
-            fill: none;
-        }}
-
-        .graph-self-loop {{
-            fill: none;
-            opacity: 0.6;
-            cursor: pointer;
-        }}
-
-        .graph-self-loop:hover {{
-            opacity: 1;
-        }}
-
-        .graph-arrow {{
-            fill: rgba(255,255,255,0.8);
+            display: block;
+            touch-action: none;
         }}
 
         .graph-tooltip {{
@@ -592,6 +565,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
         .graph-tooltip.visible {{
             opacity: 1;
+            pointer-events: auto;
         }}
 
         .graph-tooltip-title {{
@@ -655,6 +629,12 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             .fun-fact {{
                 font-size: 0.85rem;
                 padding: 8px 15px;
+            }}
+            
+            /* Graph responsive - Tablet */
+            .network-graph-container {{
+                height: 350px;
+                max-width: 100%;
             }}
         }}
         
@@ -737,6 +717,18 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             .timeline-item {{
                 font-size: 0.75rem;
+            }}
+            
+            /* Graph responsive - Mobile */
+            .network-graph-container {{
+                height: 320px;
+                max-width: 100%;
+                margin: 10px auto;
+            }}
+            
+            .graph-legend {{
+                font-size: 0.7rem;
+                padding: 6px 10px;
             }}
         }}
         
@@ -835,7 +827,8 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             animation: revealSlide 0.6s ease;
         }}
         
-        .reveal-phase.hidden {{
+        .reveal-phase.hidden,
+        .teaser-phase.hidden {{
             display: none;
         }}
         
@@ -1453,7 +1446,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         }}
 
         // Graph tooltip functions
-        function showGraphTooltip(event, graphId, edgeIdx) {{
+        function showGraphTooltip(graphId, edgeIdx, x, y) {{
             const data = window.graphData[graphId][edgeIdx];
             const tooltip = document.getElementById('tooltip-' + graphId);
             const container = document.getElementById('graph-container-' + graphId);
@@ -1478,19 +1471,8 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             // Position tooltip
             const rect = container.getBoundingClientRect();
-            const svgRect = container.querySelector('svg').getBoundingClientRect();
-            
-            let x, y;
-            if (event.touches) {{
-                x = event.touches[0].clientX - rect.left;
-                y = event.touches[0].clientY - rect.top;
-            }} else {{
-                x = event.clientX - rect.left;
-                y = event.clientY - rect.top;
-            }}
-            
-            // Adjust position to stay within container
             const tooltipRect = tooltip.getBoundingClientRect();
+            
             if (x + tooltipRect.width > rect.width - 10) {{
                 x = rect.width - tooltipRect.width - 10;
             }}
@@ -1509,15 +1491,353 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             }}
         }}
         
-        // Close tooltip when clicking elsewhere
-        document.addEventListener('click', function(e) {{
-            if (!e.target.closest('.graph-edge') && !e.target.closest('.graph-self-loop') && !e.target.closest('.graph-edge-hitarea')) {{
-                document.querySelectorAll('.graph-tooltip').forEach(t => t.classList.remove('visible'));
+        // Initialize Cytoscape graphs
+        function initCytoscapeGraph(graphId) {{
+            const container = document.getElementById('cy-' + graphId);
+            if (!container || !window.cyElements[graphId]) {{
+                console.log('Cytoscape: container or elements not found for', graphId);
+                return;
+            }}
+            if (window.cyInstances[graphId]) {{
+                console.log('Cytoscape: already initialized for', graphId);
+                return; // Already initialized
+            }}
+            
+            // Force container dimensions - ensure proper sizing
+            const parent = container.parentElement;
+            
+            // Get computed dimensions, fallback to reasonable defaults
+            const computedStyle = window.getComputedStyle(parent);
+            let width = parseInt(computedStyle.width) || parent.offsetWidth || 600;
+            let height = parseInt(computedStyle.height) || parent.offsetHeight || 400;
+            
+            // Ensure minimum dimensions
+            width = Math.max(width, 300);
+            height = Math.max(height, 300);
+            
+            // Apply dimensions explicitly to both container and canvas holder
+            parent.style.width = width + 'px';
+            parent.style.height = height + 'px';
+            container.style.width = width + 'px';
+            container.style.height = height + 'px';
+            
+            console.log('Cytoscape: initializing', graphId, 'with size', width, 'x', height);
+            
+            const elements = window.cyElements[graphId];
+            
+            const cy = cytoscape({{
+                container: container,
+                elements: [...elements.nodes, ...elements.edges],
+                style: [
+                    {{
+                        selector: 'node',
+                        style: {{
+                            'background-color': 'data(color)',
+                            'label': 'data(label)',
+                            'color': '#ffffff',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'font-size': '10px',
+                            'font-weight': '600',
+                            'font-family': 'Poppins, sans-serif',
+                            'text-outline-color': 'rgba(0,0,0,0.5)',
+                            'text-outline-width': '2px',
+                            'width': '56px',
+                            'height': '56px',
+                            'border-width': '2px',
+                            'border-color': 'rgba(255,255,255,0.3)',
+                            'transition-property': 'width, height, opacity',
+                            'transition-duration': '0.2s'
+                        }}
+                    }},
+                    {{
+                        selector: 'node.hover',
+                        style: {{
+                            'width': '68px',
+                            'height': '68px',
+                            'border-width': '3px',
+                            'z-index': 10
+                        }}
+                    }},
+                    {{
+                        selector: 'node.dimmed',
+                        style: {{
+                            'opacity': 0.2
+                        }}
+                    }},
+                    {{
+                        selector: 'node.connected',
+                        style: {{
+                            'opacity': 1
+                        }}
+                    }},
+                    {{
+                        selector: 'edge',
+                        style: {{
+                            'width': 'data(width)',
+                            'line-color': 'data(color)',
+                            'target-arrow-color': 'data(color)',
+                            'target-arrow-shape': 'triangle',
+                            'arrow-scale': 1.2,
+                            'curve-style': 'bezier',
+                            'opacity': 0.7,
+                            'label': 'data(weight)',
+                            'font-size': '10px',
+                            'font-weight': 'bold',
+                            'font-family': 'Poppins, sans-serif',
+                            'color': '#ffffff',
+                            'text-outline-color': 'rgba(0,0,0,0.8)',
+                            'text-outline-width': '3px',
+                            'text-background-color': 'rgba(0,0,0,0.5)',
+                            'text-background-opacity': 0.8,
+                            'text-background-padding': '3px',
+                            'text-background-shape': 'roundrectangle',
+                            'loop-direction': '0deg',
+                            'loop-sweep': '60deg',
+                            'control-point-step-size': 50,
+                            'transition-property': 'opacity, width',
+                            'transition-duration': '0.2s'
+                        }}
+                    }},
+                    {{
+                        selector: 'edge.highlighted',
+                        style: {{
+                            'opacity': 1,
+                            'width': 'mapData(width, 2, 8, 4, 12)',
+                            'z-index': 10
+                        }}
+                    }},
+                    {{
+                        selector: 'edge.dimmed',
+                        style: {{
+                            'opacity': 0.1
+                        }}
+                    }},
+                    {{
+                        selector: 'edge:selected',
+                        style: {{
+                            'opacity': 1,
+                            'width': 'mapData(width, 2, 8, 4, 12)'
+                        }}
+                    }}
+                ],
+                layout: {{
+                    name: 'circle',
+                    avoidOverlap: true,
+                    spacingFactor: 1.2,
+                    padding: 50,
+                    animate: false
+                }},
+                userZoomingEnabled: false,
+                userPanningEnabled: false,
+                boxSelectionEnabled: false,
+                autoungrabify: true,
+                wheelSensitivity: 0,
+                minZoom: 0.5,
+                maxZoom: 2,
+                pixelRatio: 'auto'
+            }});
+            
+            window.cyInstances[graphId] = cy;
+            
+            // Center and fit the graph after layout
+            cy.on('layoutstop', function() {{
+                setTimeout(function() {{
+                    cy.resize();
+                    cy.fit(null, 40);
+                    cy.center();
+                }}, 50);
+            }});
+            
+            // Also fit immediately after ready
+            cy.ready(function() {{
+                setTimeout(function() {{
+                    cy.resize();
+                    cy.fit(null, 40);
+                    cy.center();
+                }}, 100);
+            }});
+            
+            // Node hover - highlight outgoing edges and target nodes
+            cy.on('mouseover', 'node', function(e) {{
+                const node = e.target;
+                node.addClass('hover');
+                
+                // Dim all elements first
+                cy.elements().addClass('dimmed');
+                node.removeClass('dimmed');
+                
+                // Highlight outgoing edges and their targets
+                const outgoingEdges = node.outgoers('edge');
+                outgoingEdges.removeClass('dimmed').addClass('highlighted');
+                
+                // Keep target nodes visible
+                outgoingEdges.targets().removeClass('dimmed').addClass('connected');
+                
+                // Also highlight self-loops
+                const selfLoops = cy.edges().filter(edge => 
+                    edge.source().id() === node.id() && edge.target().id() === node.id()
+                );
+                selfLoops.removeClass('dimmed').addClass('highlighted');
+            }});
+            
+            cy.on('mouseout', 'node', function(e) {{
+                const node = e.target;
+                node.removeClass('hover');
+                cy.elements().removeClass('dimmed highlighted connected');
+            }});
+            
+            // Edge tooltip - use separate handlers for tap and mouseover
+            cy.on('tap', 'edge', function(e) {{
+                e.stopPropagation();
+                const edge = e.target;
+                const idx = edge.data('idx');
+                const renderedPos = edge.renderedMidpoint();
+                showGraphTooltip(graphId, idx, renderedPos.x, renderedPos.y);
+            }});
+            
+            cy.on('mouseover', 'edge', function(e) {{
+                const edge = e.target;
+                const idx = edge.data('idx');
+                const renderedPos = edge.renderedMidpoint();
+                showGraphTooltip(graphId, idx, renderedPos.x, renderedPos.y);
+            }});
+            
+            cy.on('mouseout', 'edge', function() {{
+                hideGraphTooltip(graphId);
+            }});
+            
+            // Click on empty space to hide tooltip
+            cy.on('tap', function(e) {{
+                if (e.target === cy) {{
+                    hideGraphTooltip(graphId);
+                }}
+            }});
+            
+            // Node tap - stop propagation so it doesn't interfere
+            cy.on('tap', 'node', function(e) {{
+                e.stopPropagation();
+            }});
+        }}
+        
+        // Initialize graphs when their slide is revealed (after click)
+        function initGraphsOnReveal(slideIndex) {{
+            const slide = slides[slideIndex];
+            if (!slide) return;
+            
+            const graphIds = ['mentions_graph', 'reactions_graph'];
+            graphIds.forEach(graphId => {{
+                if (slide.dataset.category === graphId) {{
+                    // Wait for reveal animation and DOM to update
+                    setTimeout(() => {{
+                        initCytoscapeGraph(graphId);
+                    }}, 400);
+                }}
+            }});
+        }}
+        
+        // Also try to init graph when navigating to a slide that's already revealed
+        function tryInitGraphOnSlide(slideIndex) {{
+            const slide = slides[slideIndex];
+            if (!slide) return;
+            
+            const graphIds = ['mentions_graph', 'reactions_graph'];
+            graphIds.forEach(graphId => {{
+                if (slide.dataset.category === graphId && isSlideRevealed(slideIndex)) {{
+                    setTimeout(() => {{
+                        if (!window.cyInstances[graphId]) {{
+                            initCytoscapeGraph(graphId);
+                        }} else {{
+                            // Resize and re-center if already exists
+                            const cy = window.cyInstances[graphId];
+                            cy.resize();
+                            cy.fit(null, 40);
+                            cy.center();
+                        }}
+                    }}, 150);
+                }}
+            }});
+        }}
+        
+        // Hook into revealCurrentSlide to init graphs
+        const originalRevealCurrentSlide = revealCurrentSlide;
+        revealCurrentSlide = function() {{
+            const result = originalRevealCurrentSlide();
+            if (result) {{
+                initGraphsOnReveal(currentSlide);
+            }}
+            return result;
+        }};
+        
+        // Hook into showSlide to try init if already revealed
+        const originalShowSlide = showSlide;
+        showSlide = function(index) {{
+            originalShowSlide(index);
+            tryInitGraphOnSlide(index);
+            // Update URL hash
+            if (slides[index]) {{
+                const category = slides[index].dataset.category;
+                if (category) {{
+                    history.replaceState(null, '', '#' + category);
+                }} else {{
+                    history.replaceState(null, '', '#slide-' + index);
+                }}
+            }}
+        }};
+        
+        // Parse URL hash to get initial slide
+        function getSlideFromHash() {{
+            const hash = window.location.hash.substring(1);
+            if (!hash) return 0;
+            
+            // Try to find by category id
+            for (let i = 0; i < slides.length; i++) {{
+                if (slides[i].dataset.category === hash) {{
+                    return i;
+                }}
+            }}
+            
+            // Try slide-N format
+            const match = hash.match(/^slide-(\\d+)$/);
+            if (match) {{
+                const idx = parseInt(match[1], 10);
+                if (idx >= 0 && idx < slides.length) {{
+                    return idx;
+                }}
+            }}
+            
+            return 0;
+        }}
+        
+        // Handle hash change (back/forward navigation)
+        window.addEventListener('hashchange', function() {{
+            const targetSlide = getSlideFromHash();
+            if (targetSlide !== currentSlide) {{
+                showSlide(targetSlide);
             }}
         }});
 
-        // Initialize
-        showSlide(0);
+        // Initialize from hash or start
+        const initialSlide = getSlideFromHash();
+        if (initialSlide > 0 || window.location.hash) {{
+            // Skip start overlay when using hash navigation (for testing)
+            document.getElementById('startOverlay').classList.add('hidden');
+            
+            // Auto-reveal all slides up to and including target for testing
+            for (let i = 0; i <= initialSlide; i++) {{
+                revealedSlides.add(i);
+                const teaserPhase = slides[i].querySelector('.teaser-phase');
+                const revealPhase = slides[i].querySelector('.reveal-phase');
+                if (teaserPhase) teaserPhase.classList.add('hidden');
+                if (revealPhase) revealPhase.classList.remove('hidden');
+            }}
+            
+            // Initialize graphs if we're on a graph slide
+            setTimeout(() => {{
+                tryInitGraphOnSlide(initialSlide);
+            }}, 200);
+        }}
+        showSlide(initialSlide);
         updateProgress();
     </script>
 </body>
@@ -1527,9 +1847,8 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
 
 def generate_graph_slide(cat: CategoryResult) -> str:
-    """Generate HTML for a network graph slide (mentions or reactions)."""
+    """Generate HTML for a network graph slide using Cytoscape.js."""
     import json
-    import math
     import html
     
     edges = cat.winners  # List of dicts with 'from', 'to', 'weight', and optionally 'emojis'
@@ -1544,42 +1863,50 @@ def generate_graph_slide(cat: CategoryResult) -> str:
     nodes = list(nodes_set)
     node_colors = ['#f093fb', '#667eea', '#4facfe', '#43e97b', '#f5576c', '#ffd700', '#ff6b6b', '#48dbfb', '#a29bfe', '#fd79a8']
     
-    # Create node index map
-    node_idx_map = {node: i for i, node in enumerate(nodes)}
+    # Unique ID for this graph
+    graph_id = cat.category_id
     
-    # Calculate node positions in a circle
-    center_x, center_y = 350, 225
-    radius = 160
-    node_positions = {}
+    # Build Cytoscape elements
+    cy_nodes = []
     for i, node in enumerate(nodes):
-        angle = (2 * math.pi * i) / len(nodes) - math.pi / 2
-        x = center_x + radius * math.cos(angle)
-        y = center_y + radius * math.sin(angle)
-        node_positions[node] = (x, y)
+        display_name = node.split()[0] if node else node
+        if len(display_name) > 8:
+            display_name = display_name[:7] + "."
+        cy_nodes.append({
+            'data': {
+                'id': node,
+                'label': display_name,
+                'color': node_colors[i % len(node_colors)]
+            }
+        })
     
     # Calculate max weight for scaling
     max_weight = max(edge['weight'] for edge in edges) if edges else 1
     
-    # Unique ID for this graph
-    graph_id = cat.category_id
-    
-    # Generate SVG edges (draw edges first, then nodes on top)
-    edges_svg = ""
-    edge_data = []  # For JavaScript tooltip data
-    
+    cy_edges = []
+    edge_data = []  # For tooltip data
     for idx, edge in enumerate(edges):
-        from_pos = node_positions[edge['from']]
-        to_pos = node_positions[edge['to']]
-        weight = edge['weight']
         is_self_loop = edge['from'] == edge['to']
-        
-        # Scale stroke width based on weight (2-10 px)
-        stroke_width = max(2, min(10, (weight / max_weight) * 10))
-        opacity = 0.4 + (weight / max_weight) * 0.4
+        weight = edge['weight']
         
         # Get color based on 'from' node
-        from_idx = node_idx_map[edge['from']]
+        from_idx = nodes.index(edge['from'])
         color = node_colors[from_idx % len(node_colors)]
+        
+        # Scale width based on weight (2-8 px)
+        width = max(2, min(8, (weight / max_weight) * 8))
+        
+        cy_edges.append({
+            'data': {
+                'id': f'e{idx}',
+                'source': edge['from'],
+                'target': edge['to'],
+                'weight': weight,
+                'color': color,
+                'width': width,
+                'idx': idx
+            }
+        })
         
         # Build tooltip data
         from_name = edge['from'].split()[0] if edge['from'] else edge['from']
@@ -1593,94 +1920,14 @@ def generate_graph_slide(cat: CategoryResult) -> str:
         }
         
         if is_reactions and 'emojis' in edge and edge['emojis']:
-            emoji_str = ' '.join([f"{e}×{c}" for e, c in edge['emojis'][:5]])
+            emoji_str = ' '.join([f"{e if e != '❤' else '❤️'}×{c}" for e, c in edge['emojis'][:5]])
             tooltip_data['emojis'] = emoji_str
         
         edge_data.append(tooltip_data)
-        
-        if is_self_loop:
-            # Draw a self-loop (curved path that returns to the same node)
-            x, y = from_pos
-            # Loop above the node
-            loop_radius = 35
-            # Calculate position for the loop (outward from center)
-            dx = x - center_x
-            dy = y - center_y
-            dist = math.sqrt(dx*dx + dy*dy)
-            if dist > 0:
-                nx, ny = dx/dist, dy/dist
-            else:
-                nx, ny = 0, -1
-            
-            # Control points for the loop
-            loop_cx = x + nx * (30 + loop_radius)
-            loop_cy = y + ny * (30 + loop_radius)
-            
-            # Arc path
-            start_angle = math.atan2(ny, nx) - 0.8
-            end_angle = math.atan2(ny, nx) + 0.8
-            
-            start_x = x + 28 * math.cos(start_angle)
-            start_y = y + 28 * math.sin(start_angle)
-            end_x = x + 28 * math.cos(end_angle)
-            end_y = y + 28 * math.sin(end_angle)
-            
-            # Calculate arrow direction for self-loop
-            arrow_angle = end_angle + 0.3
-            arrow_x = x + 28 * math.cos(arrow_angle)
-            arrow_y = y + 28 * math.sin(arrow_angle)
-            
-            edges_svg += f'''
-            <path class="graph-self-loop" d="M {start_x:.1f} {start_y:.1f} Q {loop_cx:.1f} {loop_cy:.1f} {end_x:.1f} {end_y:.1f}"
-                  stroke="{color}" stroke-width="{stroke_width:.1f}" style="opacity: {opacity:.2f};"
-                  marker-end="url(#arrowhead-{graph_id})"
-                  data-edge-idx="{idx}" onclick="showGraphTooltip(event, '{graph_id}', {idx})" 
-                  onmouseenter="showGraphTooltip(event, '{graph_id}', {idx})" onmouseleave="hideGraphTooltip('{graph_id}')"/>'''
-        else:
-            # Regular edge with arrow
-            dx = to_pos[0] - from_pos[0]
-            dy = to_pos[1] - from_pos[1]
-            dist = math.sqrt(dx*dx + dy*dy)
-            if dist > 0:
-                # Shorten the line to not overlap with node circle
-                shorten = 35
-                end_x = to_pos[0] - (dx / dist) * shorten
-                end_y = to_pos[1] - (dy / dist) * shorten
-                start_x = from_pos[0] + (dx / dist) * 30
-                start_y = from_pos[1] + (dy / dist) * 30
-            else:
-                end_x, end_y = to_pos
-                start_x, start_y = from_pos
-            
-            # Hitarea for easier clicking
-            edges_svg += f'''
-            <line class="graph-edge-hitarea" x1="{start_x:.1f}" y1="{start_y:.1f}" x2="{end_x:.1f}" y2="{end_y:.1f}"
-                  data-edge-idx="{idx}" onclick="showGraphTooltip(event, '{graph_id}', {idx})" 
-                  onmouseenter="showGraphTooltip(event, '{graph_id}', {idx})" onmouseleave="hideGraphTooltip('{graph_id}')"/>
-            <line class="graph-edge" x1="{start_x:.1f}" y1="{start_y:.1f}" x2="{end_x:.1f}" y2="{end_y:.1f}" 
-                  stroke="{color}" stroke-width="{stroke_width:.1f}" style="opacity: {opacity:.2f};"
-                  marker-end="url(#arrowhead-{graph_id})"
-                  data-edge-idx="{idx}" onclick="showGraphTooltip(event, '{graph_id}', {idx})" 
-                  onmouseenter="showGraphTooltip(event, '{graph_id}', {idx})" onmouseleave="hideGraphTooltip('{graph_id}')"/>'''
     
-    # Generate SVG nodes
-    nodes_svg = ""
-    for i, node in enumerate(nodes):
-        x, y = node_positions[node]
-        color = node_colors[i % len(node_colors)]
-        
-        # Get first name for display (shortened)
-        display_name = node.split()[0] if node else node
-        if len(display_name) > 8:
-            display_name = display_name[:7] + "."
-        
-        nodes_svg += f'''
-            <g class="graph-node" transform="translate({x:.1f}, {y:.1f})">
-                <circle r="28" fill="{color}"/>
-                <text y="1">{html.escape(display_name)}</text>
-            </g>'''
-    
-    # JSON encode edge data for JavaScript
+    # JSON encode data
+    cy_elements = {'nodes': cy_nodes, 'edges': cy_edges}
+    elements_json = json.dumps(cy_elements, ensure_ascii=False)
     edge_data_json = json.dumps(edge_data, ensure_ascii=False)
     
     # Assemble the slide
@@ -1698,15 +1945,7 @@ def generate_graph_slide(cat: CategoryResult) -> str:
                     <span class="icon">{cat.icon}</span>
                     <h2 class="title">{cat.title}</h2>
                     <div class="network-graph-container" id="graph-container-{graph_id}">
-                        <svg class="network-graph-svg" viewBox="0 0 700 450">
-                            <defs>
-                                <marker id="arrowhead-{graph_id}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-                                    <polygon points="0 0, 8 3, 0 6" class="graph-arrow" fill="rgba(255,255,255,0.9)"/>
-                                </marker>
-                            </defs>
-                            {edges_svg}
-                            {nodes_svg}
-                        </svg>
+                        <div class="cytoscape-graph" id="cy-{graph_id}"></div>
                         <div class="graph-tooltip" id="tooltip-{graph_id}"></div>
                         <div class="graph-legend">
                             Kliknij strzałkę aby zobaczyć szczegóły
@@ -1720,6 +1959,9 @@ def generate_graph_slide(cat: CategoryResult) -> str:
         <script>
             window.graphData = window.graphData || {{}};
             window.graphData['{graph_id}'] = {edge_data_json};
+            window.cyElements = window.cyElements || {{}};
+            window.cyElements['{graph_id}'] = {elements_json};
+            window.cyInstances = window.cyInstances || {{}};
         </script>'''
     
     return slide
@@ -1731,10 +1973,11 @@ def generate_slides(categories: list[CategoryResult]) -> str:
     
     for cat in categories:
         if cat.category_id == "group_identity" and cat.winners:
-            # Horizontal timeline with names above the bar
+            # Horizontal timeline with names alternating above/below to avoid overlap
             colors = ['#f093fb', '#667eea', '#4facfe', '#43e97b', '#f5576c', '#ffd700', '#ff6b6b', '#48dbfb']
             timeline_segments = ""
-            timeline_names = ""
+            timeline_names_above = ""
+            timeline_names_below = ""
             
             for i, entry in enumerate(cat.winners[:8]):  # Max 8 entries
                 color = colors[i % len(colors)]
@@ -1744,7 +1987,8 @@ def generate_slides(categories: list[CategoryResult]) -> str:
                         <span class="segment-days">{entry['days']}d</span>
                     </div>'''
                 
-                timeline_names += f'''
+                # Alternate between above and below rows
+                name_entry = f'''
                     <div class="timeline-name-entry" style="flex: {entry['days']};">
                         <div class="name-bubble" style="border-color: {color}; background: linear-gradient(135deg, {color}22, {color}11);">
                             <span class="name-text">{entry['name']}</span>
@@ -1752,6 +1996,17 @@ def generate_slides(categories: list[CategoryResult]) -> str:
                         </div>
                         <div class="name-connector" style="background: {color};"></div>
                     </div>'''
+                
+                # Empty placeholder for the other row
+                empty_entry = f'''
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: {entry['days']};"></div>'''
+                
+                if i % 2 == 0:
+                    timeline_names_above += name_entry
+                    timeline_names_below += empty_entry
+                else:
+                    timeline_names_above += empty_entry
+                    timeline_names_below += name_entry
             
             slide = f'''
         <div class="slide" data-category="{cat.category_id}">
@@ -1767,14 +2022,17 @@ def generate_slides(categories: list[CategoryResult]) -> str:
                     <span class="icon">{cat.icon}</span>
                     <h2 class="title">{cat.title}</h2>
                     <div class="horizontal-timeline-wrapper">
-                        <div class="timeline-names-row">
-                            {timeline_names}
+                        <div class="timeline-names-row timeline-names-above">
+                            {timeline_names_above}
                         </div>
                         <div class="timeline-bar-container">
                             <div class="timeline-bar">
                                 {timeline_segments}
                             </div>
                             <div class="timeline-arrow-head"></div>
+                        </div>
+                        <div class="timeline-names-row timeline-names-below">
+                            {timeline_names_below}
                         </div>
                     </div>
                     {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
