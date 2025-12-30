@@ -9,6 +9,7 @@
     <title>Młodzi Waginierzy - Wrapped 2025</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -242,14 +243,39 @@
             width: calc(100% - 35px);
             margin-bottom: 0;
             align-items: flex-end;
+            overflow: visible;
+        }
+        
+        .timeline-names-above {
+            align-items: flex-end;
+        }
+        
+        .timeline-names-below {
+            align-items: flex-start;
+            margin-top: 0;
+        }
+        
+        .timeline-names-below .timeline-name-entry {
+            flex-direction: column-reverse;
+        }
+        
+        .timeline-names-below .name-connector {
+            margin-bottom: 0;
+        }
+        
+        .timeline-name-empty {
+            visibility: hidden;
+            height: 0;
+            min-height: 0;
         }
         
         .timeline-name-entry {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 50px;
-            padding: 0 2px;
+            min-width: 30px;
+            padding: 0 1px;
+            overflow: visible;
         }
         
         .name-connector {
@@ -262,22 +288,22 @@
             background: rgba(255,255,255,0.1);
             border: 2px solid;
             border-radius: 10px;
-            padding: 6px 10px;
+            padding: 4px 8px;
             text-align: center;
-            width: 100%;
             backdrop-filter: blur(5px);
             margin-bottom: 0;
+            white-space: nowrap;
+            width: auto;
+            min-width: auto;
         }
         
         .name-text {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            line-height: 1.3;
-            white-space: normal;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            hyphens: auto;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: visible;
         }
         
         .name-date {
@@ -480,6 +506,76 @@
             line-height: 2;
         }
 
+        /* Text wrapping for extra-info */
+        .extra-info {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+            hyphens: auto;
+        }
+
+        /* Network Graph styles - vis.js */
+        .network-graph-container {
+            width: min(750px, calc(100vw - 40px));
+            height: clamp(350px, 50vh, 450px);
+            margin: 20px auto;
+            position: relative;
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+
+        .vis-graph {
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 280px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .graph-tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .graph-tooltip-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .graph-tooltip-emoji {
+            margin-top: 8px;
+            font-size: 1.1rem;
+        }
+
+        .graph-legend {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+
         /* Responsive - Tablets */
         @media (max-width: 768px) {
             .slide-content {
@@ -519,6 +615,12 @@
             .fun-fact {
                 font-size: 0.85rem;
                 padding: 8px 15px;
+            }
+            
+            /* Graph responsive - Tablet */
+            .network-graph-container {
+                width: calc(100vw - 32px);
+                height: clamp(300px, 55vh, 480px);
             }
         }
         
@@ -601,6 +703,18 @@
             
             .timeline-item {
                 font-size: 0.75rem;
+            }
+            
+            /* Graph responsive - Mobile */
+            .network-graph-container {
+                width: calc(100vw - 24px);
+                height: clamp(260px, 55vh, 420px);
+                margin: 12px auto;
+            }
+            
+            .graph-legend {
+                font-size: 0.7rem;
+                padding: 6px 10px;
             }
         }
         
@@ -699,7 +813,8 @@
             animation: revealSlide 0.6s ease;
         }
         
-        .reveal-phase.hidden {
+        .reveal-phase.hidden,
+        .teaser-phase.hidden {
             display: none;
         }
         
@@ -1516,7 +1631,7 @@
                     <span class="icon">🎨</span>
                     <h2 class="title">🎭 Metamorfozy</h2>
                     <div class="horizontal-timeline-wrapper">
-                        <div class="timeline-names-row">
+                        <div class="timeline-names-row timeline-names-above">
                             
                     <div class="timeline-name-entry" style="flex: 38;">
                         <div class="name-bubble" style="border-color: #f093fb; background: linear-gradient(135deg, #f093fb22, #f093fb11);">
@@ -1525,13 +1640,7 @@
                         </div>
                         <div class="name-connector" style="background: #f093fb;"></div>
                     </div>
-                    <div class="timeline-name-entry" style="flex: 71;">
-                        <div class="name-bubble" style="border-color: #667eea; background: linear-gradient(135deg, #667eea22, #667eea11);">
-                            <span class="name-text">27 suicide club</span>
-                            <span class="name-date">21 lut</span>
-                        </div>
-                        <div class="name-connector" style="background: #667eea;"></div>
-                    </div>
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: 71;"></div>
                     <div class="timeline-name-entry" style="flex: 1;">
                         <div class="name-bubble" style="border-color: #4facfe; background: linear-gradient(135deg, #4facfe22, #4facfe11);">
                             <span class="name-text">Szmoncić club</span>
@@ -1539,13 +1648,7 @@
                         </div>
                         <div class="name-connector" style="background: #4facfe;"></div>
                     </div>
-                    <div class="timeline-name-entry" style="flex: 227;">
-                        <div class="name-bubble" style="border-color: #43e97b; background: linear-gradient(135deg, #43e97b22, #43e97b11);">
-                            <span class="name-text">Szmącić club</span>
-                            <span class="name-date">5 maj</span>
-                        </div>
-                        <div class="name-connector" style="background: #43e97b;"></div>
-                    </div>
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: 227;"></div>
                     <div class="timeline-name-entry" style="flex: 4;">
                         <div class="name-bubble" style="border-color: #f5576c; background: linear-gradient(135deg, #f5576c22, #f5576c11);">
                             <span class="name-text">ANTYCZNI NAPALEŃCY</span>
@@ -1553,13 +1656,7 @@
                         </div>
                         <div class="name-connector" style="background: #f5576c;"></div>
                     </div>
-                    <div class="timeline-name-entry" style="flex: 4;">
-                        <div class="name-bubble" style="border-color: #ffd700; background: linear-gradient(135deg, #ffd70022, #ffd70011);">
-                            <span class="name-text">Młodzi Waginierzy</span>
-                            <span class="name-date">23 gru</span>
-                        </div>
-                        <div class="name-connector" style="background: #ffd700;"></div>
-                    </div>
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: 4;"></div>
                         </div>
                         <div class="timeline-bar-container">
                             <div class="timeline-bar">
@@ -1585,12 +1682,97 @@
                             </div>
                             <div class="timeline-arrow-head"></div>
                         </div>
+                        <div class="timeline-names-row timeline-names-below">
+                            
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: 38;"></div>
+                    <div class="timeline-name-entry" style="flex: 71;">
+                        <div class="name-bubble" style="border-color: #667eea; background: linear-gradient(135deg, #667eea22, #667eea11);">
+                            <span class="name-text">27 suicide club</span>
+                            <span class="name-date">21 lut</span>
+                        </div>
+                        <div class="name-connector" style="background: #667eea;"></div>
+                    </div>
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: 1;"></div>
+                    <div class="timeline-name-entry" style="flex: 227;">
+                        <div class="name-bubble" style="border-color: #43e97b; background: linear-gradient(135deg, #43e97b22, #43e97b11);">
+                            <span class="name-text">Szmącić club</span>
+                            <span class="name-date">5 maj</span>
+                        </div>
+                        <div class="name-connector" style="background: #43e97b;"></div>
+                    </div>
+                    <div class="timeline-name-entry timeline-name-empty" style="flex: 4;"></div>
+                    <div class="timeline-name-entry" style="flex: 4;">
+                        <div class="name-bubble" style="border-color: #ffd700; background: linear-gradient(135deg, #ffd70022, #ffd70011);">
+                            <span class="name-text">Młodzi Waginierzy</span>
+                            <span class="name-date">23 gru</span>
+                        </div>
+                        <div class="name-connector" style="background: #ffd700;"></div>
+                    </div>
+                        </div>
                     </div>
                     <p class="extra-info">6 zmian nazwy, 7 zmian zdjęcia</p>
                     <p class="fun-fact">Najdłuższa nazwa: 227 dni</p>
                 </div>
             </div>
         </div>
+
+        <div class="slide" data-category="mentions_graph">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">📢</span>
+                    <h2 class="title">🏷️ Sieć Oznaczeń</h2>
+                    <p class="subtitle">Kto kogo oznacza w rozmowach</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">📢</span>
+                    <h2 class="title">🏷️ Sieć Oznaczeń</h2>
+                    <div class="network-graph-container" id="graph-container-mentions_graph">
+                        <div class="vis-graph" id="vis-mentions_graph"></div>
+                        <div class="graph-tooltip" id="tooltip-mentions_graph"></div>
+                        <div class="graph-legend">
+                            Najedź na strzałkę aby zobaczyć szczegóły
+                        </div>
+                    </div>
+                    <p class="extra-info">Łącznie 1238 oznaczeń</p>
+                    <p class="fun-fact">Najczęściej oznaczany: Grzegorz Szot (207x)</p>
+                </div>
+            </div>
+        </div>
+        <script>
+            window.visGraphData = window.visGraphData || {};
+            window.visGraphData['mentions_graph'] = {"nodes": [{"id": "Wiktor Morawski", "label": "Wiktor", "color": {"background": "#f093fb", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#f093fb", "border": "#ffffff"}}, "x": 1.1021821192326179e-14, "y": -180.0, "fixed": true}, {"id": "Grzegorz Szot", "label": "Grzegorz", "color": {"background": "#667eea", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#667eea", "border": "#ffffff"}}, "x": 127.27922061357856, "y": -127.27922061357854, "fixed": true}, {"id": "Kamil Gwóźdź", "label": "Kamil", "color": {"background": "#4facfe", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#4facfe", "border": "#ffffff"}}, "x": 180.0, "y": 0.0, "fixed": true}, {"id": "Jędrzej Maskiewicz", "label": "Jędrzej", "color": {"background": "#43e97b", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#43e97b", "border": "#ffffff"}}, "x": 127.27922061357856, "y": 127.27922061357854, "fixed": true}, {"id": "Adam Ginna", "label": "Adam", "color": {"background": "#f5576c", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#f5576c", "border": "#ffffff"}}, "x": 1.1021821192326179e-14, "y": 180.0, "fixed": true}, {"id": "Tomasz Gałgański", "label": "Tomasz", "color": {"background": "#ffd700", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#ffd700", "border": "#ffffff"}}, "x": -127.27922061357854, "y": 127.27922061357856, "fixed": true}, {"id": "Łukasz Świdziniewski", "label": "Łukasz", "color": {"background": "#ff6b6b", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#ff6b6b", "border": "#ffffff"}}, "x": -180.0, "y": 2.2043642384652358e-14, "fixed": true}, {"id": "Jakub Reszke", "label": "Jakub", "color": {"background": "#48dbfb", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#48dbfb", "border": "#ffffff"}}, "x": -127.27922061357859, "y": -127.27922061357854, "fixed": true}], "edges": [{"id": "e0", "from": "Jędrzej Maskiewicz", "to": "Grzegorz Szot", "label": "141", "width": 6, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Grzegorz", "weight": 141}}, {"id": "e1", "from": "Jędrzej Maskiewicz", "to": "Tomasz Gałgański", "label": "118", "width": 5.0212765957446805, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Tomasz", "weight": 118}}, {"id": "e2", "from": "Jędrzej Maskiewicz", "to": "Adam Ginna", "label": "110", "width": 4.680851063829787, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Adam", "weight": 110}}, {"id": "e3", "from": "Jędrzej Maskiewicz", "to": "Wiktor Morawski", "label": "91", "width": 3.872340425531915, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Wiktor", "weight": 91}}, {"id": "e4", "from": "Jędrzej Maskiewicz", "to": "Kamil Gwóźdź", "label": "67", "width": 2.8510638297872344, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Kamil", "weight": 67}}, {"id": "e5", "from": "Tomasz Gałgański", "to": "Jędrzej Maskiewicz", "label": "56", "width": 2.382978723404255, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Tomasz", "to": "Jędrzej", "weight": 56}}, {"id": "e6", "from": "Tomasz Gałgański", "to": "Adam Ginna", "label": "45", "width": 1.9148936170212767, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Tomasz", "to": "Adam", "weight": 45}}, {"id": "e7", "from": "Jędrzej Maskiewicz", "to": "Łukasz Świdziniewski", "label": "45", "width": 1.9148936170212767, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Łukasz", "weight": 45}}, {"id": "e8", "from": "Adam Ginna", "to": "Jędrzej Maskiewicz", "label": "45", "width": 1.9148936170212767, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Jędrzej", "weight": 45}}, {"id": "e9", "from": "Kamil Gwóźdź", "to": "Jędrzej Maskiewicz", "label": "39", "width": 1.6595744680851063, "color": {"color": "#4facfe", "highlight": "#4facfe", "hover": "#4facfe"}, "tooltipData": {"from": "Kamil", "to": "Jędrzej", "weight": 39}}, {"id": "e10", "from": "Jędrzej Maskiewicz", "to": "Jakub Reszke", "label": "34", "width": 1.4468085106382977, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Jakub", "weight": 34}}, {"id": "e11", "from": "Tomasz Gałgański", "to": "Kamil Gwóźdź", "label": "32", "width": 1.3617021276595744, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Tomasz", "to": "Kamil", "weight": 32}}, {"id": "e12", "from": "Kamil Gwóźdź", "to": "Adam Ginna", "label": "27", "width": 1.148936170212766, "color": {"color": "#4facfe", "highlight": "#4facfe", "hover": "#4facfe"}, "tooltipData": {"from": "Kamil", "to": "Adam", "weight": 27}}, {"id": "e13", "from": "Tomasz Gałgański", "to": "Grzegorz Szot", "label": "26", "width": 1.106382978723404, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Tomasz", "to": "Grzegorz", "weight": 26}}, {"id": "e14", "from": "Adam Ginna", "to": "Tomasz Gałgański", "label": "26", "width": 1.106382978723404, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Tomasz", "weight": 26}}, {"id": "e15", "from": "Kamil Gwóźdź", "to": "Tomasz Gałgański", "label": "26", "width": 1.106382978723404, "color": {"color": "#4facfe", "highlight": "#4facfe", "hover": "#4facfe"}, "tooltipData": {"from": "Kamil", "to": "Tomasz", "weight": 26}}, {"id": "e16", "from": "Jakub Reszke", "to": "Jędrzej Maskiewicz", "label": "24", "width": 1.0212765957446808, "color": {"color": "#48dbfb", "highlight": "#48dbfb", "hover": "#48dbfb"}, "tooltipData": {"from": "Jakub", "to": "Jędrzej", "weight": 24}}, {"id": "e17", "from": "Wiktor Morawski", "to": "Jędrzej Maskiewicz", "label": "23", "width": 1, "color": {"color": "#f093fb", "highlight": "#f093fb", "hover": "#f093fb"}, "tooltipData": {"from": "Wiktor", "to": "Jędrzej", "weight": 23}}, {"id": "e18", "from": "Łukasz Świdziniewski", "to": "Kamil Gwóźdź", "label": "19", "width": 1, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Łukasz", "to": "Kamil", "weight": 19}}, {"id": "e19", "from": "Wiktor Morawski", "to": "Grzegorz Szot", "label": "18", "width": 1, "color": {"color": "#f093fb", "highlight": "#f093fb", "hover": "#f093fb"}, "tooltipData": {"from": "Wiktor", "to": "Grzegorz", "weight": 18}}, {"id": "e20", "from": "Adam Ginna", "to": "Jakub Reszke", "label": "17", "width": 1, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Jakub", "weight": 17}}, {"id": "e21", "from": "Wiktor Morawski", "to": "Tomasz Gałgański", "label": "16", "width": 1, "color": {"color": "#f093fb", "highlight": "#f093fb", "hover": "#f093fb"}, "tooltipData": {"from": "Wiktor", "to": "Tomasz", "weight": 16}}, {"id": "e22", "from": "Kamil Gwóźdź", "to": "Łukasz Świdziniewski", "label": "16", "width": 1, "color": {"color": "#4facfe", "highlight": "#4facfe", "hover": "#4facfe"}, "tooltipData": {"from": "Kamil", "to": "Łukasz", "weight": 16}}, {"id": "e23", "from": "Tomasz Gałgański", "to": "Jakub Reszke", "label": "14", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Tomasz", "to": "Jakub", "weight": 14}}, {"id": "e24", "from": "Adam Ginna", "to": "Grzegorz Szot", "label": "14", "width": 1, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Grzegorz", "weight": 14}}, {"id": "e25", "from": "Adam Ginna", "to": "Wiktor Morawski", "label": "11", "width": 1, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Wiktor", "weight": 11}}, {"id": "e26", "from": "Wiktor Morawski", "to": "Kamil Gwóźdź", "label": "11", "width": 1, "color": {"color": "#f093fb", "highlight": "#f093fb", "hover": "#f093fb"}, "tooltipData": {"from": "Wiktor", "to": "Kamil", "weight": 11}}, {"id": "e27", "from": "Tomasz Gałgański", "to": "Łukasz Świdziniewski", "label": "10", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Tomasz", "to": "Łukasz", "weight": 10}}, {"id": "e28", "from": "Adam Ginna", "to": "Kamil Gwóźdź", "label": "10", "width": 1, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Kamil", "weight": 10}}, {"id": "e29", "from": "Grzegorz Szot", "to": "Tomasz Gałgański", "label": "10", "width": 1, "color": {"color": "#667eea", "highlight": "#667eea", "hover": "#667eea"}, "tooltipData": {"from": "Grzegorz", "to": "Tomasz", "weight": 10}}]};
+        </script>
+
+        <div class="slide" data-category="reactions_graph">
+            <div class="slide-content">
+                <div class="teaser-phase">
+                    <span class="icon teaser-icon">💕</span>
+                    <h2 class="title">❤️ Sieć Reakcji</h2>
+                    <p class="subtitle">Kto komu daje reakcje</p>
+                    <div class="suspense-dots"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="tap-hint">Kliknij aby zobaczyć wyniki</p>
+                </div>
+                <div class="reveal-phase hidden">
+                    <span class="icon">💕</span>
+                    <h2 class="title">❤️ Sieć Reakcji</h2>
+                    <div class="network-graph-container" id="graph-container-reactions_graph">
+                        <div class="vis-graph" id="vis-reactions_graph"></div>
+                        <div class="graph-tooltip" id="tooltip-reactions_graph"></div>
+                        <div class="graph-legend">
+                            Najedź na strzałkę aby zobaczyć szczegóły
+                        </div>
+                    </div>
+                    <p class="extra-info">Łącznie 31216 reakcji między osobami</p>
+                    <p class="fun-fact">Najwięcej reakcji dostaje: Jędrzej Maskiewicz (11151x)</p>
+                </div>
+            </div>
+        </div>
+        <script>
+            window.visGraphData = window.visGraphData || {};
+            window.visGraphData['reactions_graph'] = {"nodes": [{"id": "Wiktor Morawski", "label": "Wiktor", "color": {"background": "#f093fb", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#f093fb", "border": "#ffffff"}}, "x": 1.1021821192326179e-14, "y": -180.0, "fixed": true}, {"id": "Grzegorz Szot", "label": "Grzegorz", "color": {"background": "#667eea", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#667eea", "border": "#ffffff"}}, "x": 127.27922061357856, "y": -127.27922061357854, "fixed": true}, {"id": "Kamil Gwóźdź", "label": "Kamil", "color": {"background": "#4facfe", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#4facfe", "border": "#ffffff"}}, "x": 180.0, "y": 0.0, "fixed": true}, {"id": "Jędrzej Maskiewicz", "label": "Jędrzej", "color": {"background": "#43e97b", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#43e97b", "border": "#ffffff"}}, "x": 127.27922061357856, "y": 127.27922061357854, "fixed": true}, {"id": "Adam Ginna", "label": "Adam", "color": {"background": "#f5576c", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#f5576c", "border": "#ffffff"}}, "x": 1.1021821192326179e-14, "y": 180.0, "fixed": true}, {"id": "Jakub Reszke", "label": "Jakub", "color": {"background": "#ffd700", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#ffd700", "border": "#ffffff"}}, "x": -127.27922061357854, "y": 127.27922061357856, "fixed": true}, {"id": "Tomasz Gałgański", "label": "Tomasz", "color": {"background": "#ff6b6b", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#ff6b6b", "border": "#ffffff"}}, "x": -180.0, "y": 2.2043642384652358e-14, "fixed": true}, {"id": "Łukasz Świdziniewski", "label": "Łukasz", "color": {"background": "#48dbfb", "border": "rgba(255,255,255,0.4)", "highlight": {"background": "#48dbfb", "border": "#ffffff"}}, "x": -127.27922061357859, "y": -127.27922061357854, "fixed": true}], "edges": [{"id": "e0", "from": "Tomasz Gałgański", "to": "Jędrzej Maskiewicz", "label": "5611", "width": 6, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Jędrzej", "weight": 5611, "emojis": "😆×4756 ❤️×473 👍×192 🤔×51 😮×44"}}, {"id": "e1", "from": "Jakub Reszke", "to": "Tomasz Gałgański", "label": "2908", "width": 3.1096061308144716, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Tomasz", "weight": 2908, "emojis": "😆×1016 ❤️×671 👍×494 😶×200 🤔×174"}}, {"id": "e2", "from": "Jędrzej Maskiewicz", "to": "Tomasz Gałgański", "label": "2440", "width": 2.609160577437177, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Tomasz", "weight": 2440, "emojis": "😆×1770 ❤️×362 👍×172 😮×70 😢×29"}}, {"id": "e3", "from": "Jakub Reszke", "to": "Jędrzej Maskiewicz", "label": "2328", "width": 2.4893958296203884, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Jędrzej", "weight": 2328, "emojis": "😆×797 ❤️×497 😶×246 😢×196 🤔×189"}}, {"id": "e4", "from": "Tomasz Gałgański", "to": "Adam Ginna", "label": "1282", "width": 1.370878631260025, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Adam", "weight": 1282, "emojis": "😆×1090 ❤️×97 🤔×28 👍×25 😮×9"}}, {"id": "e5", "from": "Grzegorz Szot", "to": "Jędrzej Maskiewicz", "label": "1268", "width": 1.3559080377829265, "color": {"color": "#667eea", "highlight": "#667eea", "hover": "#667eea"}, "tooltipData": {"from": "Grzegorz", "to": "Jędrzej", "weight": 1268, "emojis": "😆×853 ❤️×241 👍×84 😢×42 😮×21"}}, {"id": "e6", "from": "Adam Ginna", "to": "Tomasz Gałgański", "label": "1179", "width": 1.2607378363928, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Tomasz", "weight": 1179, "emojis": "😆×821 ❤️×161 👍×115 😮×30 😢×24"}}, {"id": "e7", "from": "Grzegorz Szot", "to": "Tomasz Gałgański", "label": "1146", "width": 1.2254500089110674, "color": {"color": "#667eea", "highlight": "#667eea", "hover": "#667eea"}, "tooltipData": {"from": "Grzegorz", "to": "Tomasz", "weight": 1146, "emojis": "😆×771 ❤️×228 👍×74 😢×30 😮×15"}}, {"id": "e8", "from": "Tomasz Gałgański", "to": "Kamil Gwóźdź", "label": "1061", "width": 1.1345571199429692, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Kamil", "weight": 1061, "emojis": "😆×698 ❤️×233 👍×91 🤔×12 😮×11"}}, {"id": "e9", "from": "Adam Ginna", "to": "Jędrzej Maskiewicz", "label": "968", "width": 1.0351096061308145, "color": {"color": "#f5576c", "highlight": "#f5576c", "hover": "#f5576c"}, "tooltipData": {"from": "Adam", "to": "Jędrzej", "weight": 968, "emojis": "😆×726 ❤️×106 👍×65 😢×28 😮×24"}}, {"id": "e10", "from": "Tomasz Gałgański", "to": "Grzegorz Szot", "label": "931", "width": 1, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Grzegorz", "weight": 931, "emojis": "😆×763 ❤️×102 👍×35 🗿×8 😮×6"}}, {"id": "e11", "from": "Tomasz Gałgański", "to": "Jakub Reszke", "label": "895", "width": 1, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Jakub", "weight": 895, "emojis": "😆×641 ❤️×115 👍×106 😎×10 🤔×9"}}, {"id": "e12", "from": "Tomasz Gałgański", "to": "Łukasz Świdziniewski", "label": "877", "width": 1, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Łukasz", "weight": 877, "emojis": "😆×727 ❤️×107 👍×30 😮×4 😎×2"}}, {"id": "e13", "from": "Jędrzej Maskiewicz", "to": "Łukasz Świdziniewski", "label": "554", "width": 1, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Łukasz", "weight": 554, "emojis": "😆×378 ❤️×124 👍×24 😮×12 😢×9"}}, {"id": "e14", "from": "Tomasz Gałgański", "to": "Wiktor Morawski", "label": "457", "width": 1, "color": {"color": "#ff6b6b", "highlight": "#ff6b6b", "hover": "#ff6b6b"}, "tooltipData": {"from": "Tomasz", "to": "Wiktor", "weight": 457, "emojis": "😆×391 ❤️×28 👍×21 🤔×7 😮×6"}}, {"id": "e15", "from": "Łukasz Świdziniewski", "to": "Jędrzej Maskiewicz", "label": "376", "width": 1, "color": {"color": "#48dbfb", "highlight": "#48dbfb", "hover": "#48dbfb"}, "tooltipData": {"from": "Łukasz", "to": "Jędrzej", "weight": 376, "emojis": "😆×165 ❤️×131 👍×41 😢×35 😮×3"}}, {"id": "e16", "from": "Jakub Reszke", "to": "Adam Ginna", "label": "370", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Adam", "weight": 370, "emojis": "❤️×116 😆×114 👍×52 😶×29 😢×22"}}, {"id": "e17", "from": "Wiktor Morawski", "to": "Jędrzej Maskiewicz", "label": "369", "width": 1, "color": {"color": "#f093fb", "highlight": "#f093fb", "hover": "#f093fb"}, "tooltipData": {"from": "Wiktor", "to": "Jędrzej", "weight": 369, "emojis": "😆×295 ❤️×42 👍×13 😮×4 😢×3"}}, {"id": "e18", "from": "Jędrzej Maskiewicz", "to": "Kamil Gwóźdź", "label": "362", "width": 1, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Kamil", "weight": 362, "emojis": "😆×213 ❤️×86 😮×27 👍×22 😢×9"}}, {"id": "e19", "from": "Łukasz Świdziniewski", "to": "Tomasz Gałgański", "label": "352", "width": 1, "color": {"color": "#48dbfb", "highlight": "#48dbfb", "hover": "#48dbfb"}, "tooltipData": {"from": "Łukasz", "to": "Tomasz", "weight": 352, "emojis": "😆×134 ❤️×119 👍×55 😢×40 🤢×4"}}, {"id": "e20", "from": "Jędrzej Maskiewicz", "to": "Adam Ginna", "label": "343", "width": 1, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Adam", "weight": 343, "emojis": "😆×249 ❤️×54 👍×17 😢×8 😮×6"}}, {"id": "e21", "from": "Wiktor Morawski", "to": "Tomasz Gałgański", "label": "338", "width": 1, "color": {"color": "#f093fb", "highlight": "#f093fb", "hover": "#f093fb"}, "tooltipData": {"from": "Wiktor", "to": "Tomasz", "weight": 338, "emojis": "😆×261 ❤️×41 👍×15 😮×12 😭×3"}}, {"id": "e22", "from": "Kamil Gwóźdź", "to": "Tomasz Gałgański", "label": "327", "width": 1, "color": {"color": "#4facfe", "highlight": "#4facfe", "hover": "#4facfe"}, "tooltipData": {"from": "Kamil", "to": "Tomasz", "weight": 327, "emojis": "👍×139 😆×114 ❤️×53 😢×9 😮×4"}}, {"id": "e23", "from": "Jędrzej Maskiewicz", "to": "Jakub Reszke", "label": "324", "width": 1, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Jakub", "weight": 324, "emojis": "😆×215 ❤️×61 😮×19 👍×17 😎×4"}}, {"id": "e24", "from": "Jakub Reszke", "to": "Łukasz Świdziniewski", "label": "323", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Łukasz", "weight": 323, "emojis": "😆×181 ❤️×43 😶×30 👍×25 🤔×14"}}, {"id": "e25", "from": "Jędrzej Maskiewicz", "to": "Grzegorz Szot", "label": "270", "width": 1, "color": {"color": "#43e97b", "highlight": "#43e97b", "hover": "#43e97b"}, "tooltipData": {"from": "Jędrzej", "to": "Grzegorz", "weight": 270, "emojis": "😆×185 ❤️×59 👍×13 😢×7 😡×3"}}, {"id": "e26", "from": "Jakub Reszke", "to": "Grzegorz Szot", "label": "256", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Grzegorz", "weight": 256, "emojis": "😆×92 ❤️×89 👍×24 😶×18 🤔×14"}}, {"id": "e27", "from": "Jakub Reszke", "to": "Wiktor Morawski", "label": "255", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Wiktor", "weight": 255, "emojis": "😆×101 ❤️×67 👍×42 😶×13 🤔×13"}}, {"id": "e28", "from": "Jakub Reszke", "to": "Kamil Gwóźdź", "label": "230", "width": 1, "color": {"color": "#ffd700", "highlight": "#ffd700", "hover": "#ffd700"}, "tooltipData": {"from": "Jakub", "to": "Kamil", "weight": 230, "emojis": "😆×88 ❤️×46 👍×38 😶×21 🤔×9"}}, {"id": "e29", "from": "Grzegorz Szot", "to": "Adam Ginna", "label": "225", "width": 1, "color": {"color": "#667eea", "highlight": "#667eea", "hover": "#667eea"}, "tooltipData": {"from": "Grzegorz", "to": "Adam", "weight": 225, "emojis": "😆×135 ❤️×44 👍×18 😢×8 😮×7"}}]};
+        </script>
 
         <div class="slide intro-slide" data-category="summary" data-no-suspense="true">
             <div class="slide-content summary-content">
@@ -1618,6 +1800,7 @@
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const totalSlides = slides.length;
+        const GRAPH_IDS = ['mentions_graph', 'reactions_graph'];
         let isPlaying = false;
         const audioBtn = document.getElementById('audioControl');
         
@@ -2041,6 +2224,44 @@
                 }, 700);
             },
             
+            // 🏷️ Sieć Oznaczeń - network connection sounds
+            'mentions_graph': () => {
+                // Digital network pings
+                [0, 100, 200, 350, 500].forEach((delay, i) => {
+                    setTimeout(() => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = 600 + i * 150;
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.15);
+                    }, delay);
+                });
+            },
+            
+            // ❤️ Sieć Reakcji - love connection sounds
+            'reactions_graph': () => {
+                // Heartbeat with rising tones
+                [0, 200, 500, 700].forEach((delay, i) => {
+                    setTimeout(() => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = 300 + i * 100;
+                        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.2);
+                    }, delay);
+                });
+            },
+            
             // 📊 Podsumowanie - grand finale fanfare
             'summary': () => {
                 playMelody([523, 659, 784, 1047, 1319, 1568], 'triangle', 0.25, 0.12);
@@ -2092,8 +2313,363 @@
             }
         }
 
-        // Initialize
-        showSlide(0);
+        // Graph tooltip functions
+        function showGraphTooltip(graphId, edgeData, x, y) {
+            const tooltip = document.getElementById('tooltip-' + graphId);
+            const container = document.getElementById('graph-container-' + graphId);
+            
+            if (!tooltip || !edgeData) return;
+            
+            let html = '<div class="graph-tooltip-title">';
+            html += edgeData.from + ' → ' + edgeData.to;
+            html += '</div>';
+            html += '<div><strong>' + edgeData.weight + '</strong> ' + (graphId === 'reactions_graph' ? 'reakcji' : 'oznaczeń') + '</div>';
+            
+            if (edgeData.emojis) {
+                html += '<div class="graph-tooltip-emoji">' + edgeData.emojis + '</div>';
+            }
+            
+            tooltip.innerHTML = html;
+            tooltip.classList.add('visible');
+            
+            // Position tooltip relative to container
+            const rect = container.getBoundingClientRect();
+            let posX = x - rect.left;
+            let posY = y - rect.top;
+            
+            // Keep tooltip in bounds
+            if (posX + 200 > rect.width) posX = rect.width - 210;
+            if (posY + 100 > rect.height) posY = posY - 80;
+            
+            tooltip.style.left = Math.max(10, posX) + 'px';
+            tooltip.style.top = Math.max(10, posY) + 'px';
+        }
+        
+        function hideGraphTooltip(graphId) {
+            const tooltip = document.getElementById('tooltip-' + graphId);
+            if (tooltip) {
+                tooltip.classList.remove('visible');
+            }
+        }
+
+        // Initialize vis.js Network graphs
+        function initVisGraph(graphId) {
+            const container = document.getElementById('vis-' + graphId);
+            if (!container || !window.visGraphData[graphId]) {
+                console.log('vis.js: container or data not found for', graphId);
+                return;
+            }
+            if (window.visInstances && window.visInstances[graphId]) {
+                console.log('vis.js: already initialized for', graphId);
+                return;
+            }
+
+            console.log('vis.js: initializing', graphId);
+            
+            const graphData = window.visGraphData[graphId];
+            
+            const nodes = new vis.DataSet(graphData.nodes);
+            const edges = new vis.DataSet(graphData.edges);
+            
+            // Store original widths for restoring after hover
+            const originalEdgeWidths = {};
+            graphData.edges.forEach(e => { originalEdgeWidths[e.id] = e.width; });
+            
+            const data = { nodes: nodes, edges: edges };
+            
+            const options = {
+                autoResize: true,
+                height: '100%',
+                width: '100%',
+                nodes: {
+                    shape: 'circle',
+                    size: 30,
+                    font: {
+                        size: 12,
+                        color: '#ffffff',
+                        face: 'Poppins',
+                        strokeWidth: 2,
+                        strokeColor: 'rgba(0,0,0,0.5)'
+                    },
+                    borderWidth: 2,
+                    borderWidthSelected: 3,
+                    shadow: true
+                },
+                edges: {
+                    arrows: {
+                        to: { enabled: true, scaleFactor: 0.8 }
+                    },
+                    font: {
+                        size: 11,
+                        color: '#ffffff',
+                        strokeWidth: 3,
+                        strokeColor: 'rgba(0,0,0,0.8)',
+                        align: 'middle'
+                    },
+                    smooth: {
+                        type: 'curvedCW',
+                        roundness: 0.2
+                    },
+                    selfReferenceSize: 30,
+                    shadow: true
+                },
+                physics: {
+                    enabled: false
+                },
+                layout: {
+                    improvedLayout: true
+                },
+                interaction: {
+                    dragNodes: false,
+                    dragView: false,
+                    zoomView: false,
+                    selectable: true,
+                    hover: true
+                }
+            };
+            
+            const network = new vis.Network(container, data, options);
+            
+            window.visInstances = window.visInstances || {};
+            window.visInstances[graphId] = network;
+            
+            // Fit to container after stabilization
+            network.once('stabilized', function() {
+                network.fit({ padding: 50, animation: false });
+            });
+            
+            // Also fit after a delay
+            setTimeout(() => {
+                network.fit({ padding: 50, animation: false });
+            }, 100);
+            setTimeout(() => {
+                network.fit({ padding: 50, animation: false });
+            }, 300);
+            
+            // Edge hover for tooltip
+            network.on('hoverEdge', function(params) {
+                const edgeId = params.edge;
+                const edge = edges.get(edgeId);
+                if (edge && edge.tooltipData) {
+                    const pointer = params.pointer.DOM;
+                    const containerRect = container.getBoundingClientRect();
+                    showGraphTooltip(graphId, edge.tooltipData, containerRect.left + pointer.x, containerRect.top + pointer.y);
+                }
+            });
+            
+            network.on('blurEdge', function() {
+                hideGraphTooltip(graphId);
+            });
+            
+            // Node hover - highlight only outgoing edges
+            network.on('hoverNode', function(params) {
+                const nodeId = params.node;
+                const allEdges = edges.get();
+                const updates = [];
+                
+                allEdges.forEach(edge => {
+                    const isOutgoing = edge.from === nodeId;
+                    const isConnected = edge.from === nodeId || edge.to === nodeId;
+                    const origWidth = originalEdgeWidths[edge.id] || edge.width;
+                    updates.push({
+                        id: edge.id,
+                        font: {
+                            size: isConnected ? 12 : 0,
+                            color: '#ffffff',
+                            strokeWidth: 3,
+                            strokeColor: 'rgba(0,0,0,0.8)'
+                        },
+                        color: {
+                            color: isOutgoing ? edge.color.color : 'rgba(150,150,150,0.15)',
+                            highlight: edge.color.color,
+                            hover: edge.color.color
+                        },
+                        width: isOutgoing ? origWidth * 1.5 : 0.3
+                    });
+                });
+                edges.update(updates);
+                
+                // Also dim unconnected nodes - only show targets of outgoing edges
+                const allNodes = nodes.get();
+                const connectedNodeIds = new Set([nodeId]);
+                allEdges.forEach(edge => {
+                    if (edge.from === nodeId) connectedNodeIds.add(edge.to);
+                });
+                
+                const nodeUpdates = allNodes.map(node => ({
+                    id: node.id,
+                    opacity: connectedNodeIds.has(node.id) ? 1.0 : 0.3
+                }));
+                nodes.update(nodeUpdates);
+            });
+            
+            network.on('blurNode', function() {
+                // Restore all edges to original state
+                const allEdges = edges.get();
+                const updates = allEdges.map(edge => ({
+                    id: edge.id,
+                    font: {
+                        size: 11,
+                        color: '#ffffff',
+                        strokeWidth: 3,
+                        strokeColor: 'rgba(0,0,0,0.8)'
+                    },
+                    color: {
+                        color: edge.color.highlight || edge.color.color,
+                        highlight: edge.color.highlight || edge.color.color,
+                        hover: edge.color.hover || edge.color.color
+                    },
+                    width: originalEdgeWidths[edge.id] || edge.width
+                }));
+                edges.update(updates);
+                
+                // Restore all nodes
+                const allNodes = nodes.get();
+                const nodeUpdates = allNodes.map(node => ({
+                    id: node.id,
+                    opacity: 1.0
+                }));
+                nodes.update(nodeUpdates);
+            });
+            
+            // Click on edge
+            network.on('selectEdge', function(params) {
+                if (params.edges.length > 0) {
+                    const edgeId = params.edges[0];
+                    const edge = edges.get(edgeId);
+                    if (edge && edge.tooltipData) {
+                        const pointer = params.pointer.DOM;
+                        const containerRect = container.getBoundingClientRect();
+                        showGraphTooltip(graphId, edge.tooltipData, containerRect.left + pointer.x, containerRect.top + pointer.y);
+                    }
+                }
+            });
+            
+            network.on('deselectEdge', function() {
+                hideGraphTooltip(graphId);
+            });
+        }
+        
+        // Initialize graphs when their slide is revealed
+        function initGraphsOnReveal(slideIndex) {
+            const slide = slides[slideIndex];
+            if (!slide) return;
+
+            GRAPH_IDS.forEach(graphId => {
+                if (slide.dataset.category === graphId) {
+                    setTimeout(() => {
+                        initVisGraph(graphId);
+                    }, 400);
+                }
+            });
+        }
+        
+        // Try to init graph when navigating to already revealed slide
+        function tryInitGraphOnSlide(slideIndex) {
+            const slide = slides[slideIndex];
+            if (!slide) return;
+
+            GRAPH_IDS.forEach(graphId => {
+                if (slide.dataset.category === graphId && isSlideRevealed(slideIndex)) {
+                    setTimeout(() => {
+                        if (!window.visInstances || !window.visInstances[graphId]) {
+                            initVisGraph(graphId);
+                        } else {
+                            window.visInstances[graphId].fit({ padding: 50, animation: false });
+                        }
+                    }, 150);
+                }
+            });
+        }
+
+        // Keep graphs responsive on viewport changes
+        window.addEventListener('resize', () => {
+            GRAPH_IDS.forEach(id => {
+                if (window.visInstances && window.visInstances[id]) {
+                    window.visInstances[id].fit({ padding: 50, animation: false });
+                }
+            });
+        });
+        
+        // Hook into revealCurrentSlide to init graphs
+        const originalRevealCurrentSlide = revealCurrentSlide;
+        revealCurrentSlide = function() {
+            const result = originalRevealCurrentSlide();
+            if (result) {
+                initGraphsOnReveal(currentSlide);
+            }
+            return result;
+        };
+        
+        // Hook into showSlide to try init if already revealed
+        const originalShowSlide = showSlide;
+        showSlide = function(index) {
+            originalShowSlide(index);
+            tryInitGraphOnSlide(index);
+            // Update URL hash
+            if (slides[index]) {
+                const category = slides[index].dataset.category;
+                if (category) {
+                    history.replaceState(null, '', '#' + category);
+                } else {
+                    history.replaceState(null, '', '#slide-' + index);
+                }
+            }
+        };
+        
+        // Parse URL hash to get initial slide
+        function getSlideFromHash() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return 0;
+            
+            // Try to find by category id
+            for (let i = 0; i < slides.length; i++) {
+                if (slides[i].dataset.category === hash) {
+                    return i;
+                }
+            }
+            
+            // Try slide-N format
+            const match = hash.match(/^slide-(\d+)$/);
+            if (match) {
+                const idx = parseInt(match[1], 10);
+                if (idx >= 0 && idx < slides.length) {
+                    return idx;
+                }
+            }
+            
+            return 0;
+        }
+        
+        // Handle hash change (back/forward navigation)
+        window.addEventListener('hashchange', function() {
+            const targetSlide = getSlideFromHash();
+            if (targetSlide !== currentSlide) {
+                showSlide(targetSlide);
+            }
+        });
+
+        // Initialize from hash or start
+        const initialSlide = getSlideFromHash();
+        if (initialSlide > 0 || window.location.hash) {
+            // Skip start overlay when using hash navigation (for testing)
+            document.getElementById('startOverlay').classList.add('hidden');
+            
+            // Auto-reveal all slides up to and including target for testing
+            for (let i = 0; i <= initialSlide; i++) {
+                revealedSlides.add(i);
+                const teaserPhase = slides[i].querySelector('.teaser-phase');
+                const revealPhase = slides[i].querySelector('.reveal-phase');
+                if (teaserPhase) teaserPhase.classList.add('hidden');
+                if (revealPhase) revealPhase.classList.remove('hidden');
+            }
+            
+            // Initialize graphs if we're on a graph slide
+            setTimeout(() => {
+                tryInitGraphOnSlide(initialSlide);
+            }, 200);
+        }
+        showSlide(initialSlide);
         updateProgress();
     </script>
 </body>
