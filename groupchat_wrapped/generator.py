@@ -18,7 +18,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
     <title>{result.conversation_title} - Wrapped 2025</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
     <style>
         * {{
             margin: 0;
@@ -524,26 +524,21 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             hyphens: auto;
         }}
 
-        /* Network Graph styles - Cytoscape.js */
+        /* Network Graph styles - vis.js */
         .network-graph-container {{
-            width: 100%;
-            max-width: 600px;
-            height: 400px;
+            width: min(750px, calc(100vw - 40px));
+            height: clamp(350px, 50vh, 450px);
             margin: 20px auto;
             position: relative;
             background: rgba(255,255,255,0.08);
             border-radius: 20px;
-            overflow: visible;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
         }}
 
-        .cytoscape-graph {{
-            position: absolute;
-            top: 0;
-            left: 0;
+        .vis-graph {{
             width: 100%;
             height: 100%;
-            display: block;
-            touch-action: none;
         }}
 
         .graph-tooltip {{
@@ -633,8 +628,8 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             /* Graph responsive - Tablet */
             .network-graph-container {{
-                height: 350px;
-                max-width: 100%;
+                width: calc(100vw - 32px);
+                height: clamp(300px, 55vh, 480px);
             }}
         }}
         
@@ -721,9 +716,9 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
             
             /* Graph responsive - Mobile */
             .network-graph-container {{
-                height: 320px;
-                max-width: 100%;
-                margin: 10px auto;
+                width: calc(100vw - 24px);
+                height: clamp(260px, 55vh, 420px);
+                margin: 12px auto;
             }}
             
             .graph-legend {{
@@ -933,6 +928,7 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const totalSlides = slides.length;
+        const GRAPH_IDS = ['mentions_graph', 'reactions_graph'];
         let isPlaying = false;
         const audioBtn = document.getElementById('audioControl');
         
@@ -1446,42 +1442,35 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
         }}
 
         // Graph tooltip functions
-        function showGraphTooltip(graphId, edgeIdx, x, y) {{
-            const data = window.graphData[graphId][edgeIdx];
+        function showGraphTooltip(graphId, edgeData, x, y) {{
             const tooltip = document.getElementById('tooltip-' + graphId);
             const container = document.getElementById('graph-container-' + graphId);
             
-            if (!tooltip || !data) return;
+            if (!tooltip || !edgeData) return;
             
             let html = '<div class="graph-tooltip-title">';
-            if (data.isSelf) {{
-                html += data.from + ' → ' + data.from + ' (sam sobie)';
-            }} else {{
-                html += data.from + ' → ' + data.to;
-            }}
+            html += edgeData.from + ' → ' + edgeData.to;
             html += '</div>';
-            html += '<div><strong>' + data.weight + '</strong> ' + (graphId === 'reactions_graph' ? 'reakcji' : 'oznaczeń') + '</div>';
+            html += '<div><strong>' + edgeData.weight + '</strong> ' + (graphId === 'reactions_graph' ? 'reakcji' : 'oznaczeń') + '</div>';
             
-            if (data.emojis) {{
-                html += '<div class="graph-tooltip-emoji">' + data.emojis + '</div>';
+            if (edgeData.emojis) {{
+                html += '<div class="graph-tooltip-emoji">' + edgeData.emojis + '</div>';
             }}
             
             tooltip.innerHTML = html;
             tooltip.classList.add('visible');
             
-            // Position tooltip
+            // Position tooltip relative to container
             const rect = container.getBoundingClientRect();
-            const tooltipRect = tooltip.getBoundingClientRect();
+            let posX = x - rect.left;
+            let posY = y - rect.top;
             
-            if (x + tooltipRect.width > rect.width - 10) {{
-                x = rect.width - tooltipRect.width - 10;
-            }}
-            if (y + tooltipRect.height > rect.height - 10) {{
-                y = y - tooltipRect.height - 10;
-            }}
+            // Keep tooltip in bounds
+            if (posX + 200 > rect.width) posX = rect.width - 210;
+            if (posY + 100 > rect.height) posY = posY - 80;
             
-            tooltip.style.left = Math.max(10, x) + 'px';
-            tooltip.style.top = Math.max(10, y) + 'px';
+            tooltip.style.left = Math.max(10, posX) + 'px';
+            tooltip.style.top = Math.max(10, posY) + 'px';
         }}
         
         function hideGraphTooltip(graphId) {{
@@ -1490,274 +1479,245 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
                 tooltip.classList.remove('visible');
             }}
         }}
-        
-        // Initialize Cytoscape graphs
-        function initCytoscapeGraph(graphId) {{
-            const container = document.getElementById('cy-' + graphId);
-            if (!container || !window.cyElements[graphId]) {{
-                console.log('Cytoscape: container or elements not found for', graphId);
+
+        // Initialize vis.js Network graphs
+        function initVisGraph(graphId) {{
+            const container = document.getElementById('vis-' + graphId);
+            if (!container || !window.visGraphData[graphId]) {{
+                console.log('vis.js: container or data not found for', graphId);
                 return;
             }}
-            if (window.cyInstances[graphId]) {{
-                console.log('Cytoscape: already initialized for', graphId);
-                return; // Already initialized
+            if (window.visInstances && window.visInstances[graphId]) {{
+                console.log('vis.js: already initialized for', graphId);
+                return;
             }}
+
+            console.log('vis.js: initializing', graphId);
             
-            // Force container dimensions - ensure proper sizing
-            const parent = container.parentElement;
+            const graphData = window.visGraphData[graphId];
             
-            // Get computed dimensions, fallback to reasonable defaults
-            const computedStyle = window.getComputedStyle(parent);
-            let width = parseInt(computedStyle.width) || parent.offsetWidth || 600;
-            let height = parseInt(computedStyle.height) || parent.offsetHeight || 400;
+            const nodes = new vis.DataSet(graphData.nodes);
+            const edges = new vis.DataSet(graphData.edges);
             
-            // Ensure minimum dimensions
-            width = Math.max(width, 300);
-            height = Math.max(height, 300);
+            // Store original widths for restoring after hover
+            const originalEdgeWidths = {{}};
+            graphData.edges.forEach(e => {{ originalEdgeWidths[e.id] = e.width; }});
             
-            // Apply dimensions explicitly to both container and canvas holder
-            parent.style.width = width + 'px';
-            parent.style.height = height + 'px';
-            container.style.width = width + 'px';
-            container.style.height = height + 'px';
+            const data = {{ nodes: nodes, edges: edges }};
             
-            console.log('Cytoscape: initializing', graphId, 'with size', width, 'x', height);
-            
-            const elements = window.cyElements[graphId];
-            
-            const cy = cytoscape({{
-                container: container,
-                elements: [...elements.nodes, ...elements.edges],
-                style: [
-                    {{
-                        selector: 'node',
-                        style: {{
-                            'background-color': 'data(color)',
-                            'label': 'data(label)',
-                            'color': '#ffffff',
-                            'text-valign': 'center',
-                            'text-halign': 'center',
-                            'font-size': '10px',
-                            'font-weight': '600',
-                            'font-family': 'Poppins, sans-serif',
-                            'text-outline-color': 'rgba(0,0,0,0.5)',
-                            'text-outline-width': '2px',
-                            'width': '56px',
-                            'height': '56px',
-                            'border-width': '2px',
-                            'border-color': 'rgba(255,255,255,0.3)',
-                            'transition-property': 'width, height, opacity',
-                            'transition-duration': '0.2s'
-                        }}
+            const options = {{
+                autoResize: true,
+                height: '100%',
+                width: '100%',
+                nodes: {{
+                    shape: 'circle',
+                    size: 30,
+                    font: {{
+                        size: 12,
+                        color: '#ffffff',
+                        face: 'Poppins',
+                        strokeWidth: 2,
+                        strokeColor: 'rgba(0,0,0,0.5)'
                     }},
-                    {{
-                        selector: 'node.hover',
-                        style: {{
-                            'width': '68px',
-                            'height': '68px',
-                            'border-width': '3px',
-                            'z-index': 10
-                        }}
-                    }},
-                    {{
-                        selector: 'node.dimmed',
-                        style: {{
-                            'opacity': 0.2
-                        }}
-                    }},
-                    {{
-                        selector: 'node.connected',
-                        style: {{
-                            'opacity': 1
-                        }}
-                    }},
-                    {{
-                        selector: 'edge',
-                        style: {{
-                            'width': 'data(width)',
-                            'line-color': 'data(color)',
-                            'target-arrow-color': 'data(color)',
-                            'target-arrow-shape': 'triangle',
-                            'arrow-scale': 1.2,
-                            'curve-style': 'bezier',
-                            'opacity': 0.7,
-                            'label': 'data(weight)',
-                            'font-size': '10px',
-                            'font-weight': 'bold',
-                            'font-family': 'Poppins, sans-serif',
-                            'color': '#ffffff',
-                            'text-outline-color': 'rgba(0,0,0,0.8)',
-                            'text-outline-width': '3px',
-                            'text-background-color': 'rgba(0,0,0,0.5)',
-                            'text-background-opacity': 0.8,
-                            'text-background-padding': '3px',
-                            'text-background-shape': 'roundrectangle',
-                            'loop-direction': '0deg',
-                            'loop-sweep': '60deg',
-                            'control-point-step-size': 50,
-                            'transition-property': 'opacity, width',
-                            'transition-duration': '0.2s'
-                        }}
-                    }},
-                    {{
-                        selector: 'edge.highlighted',
-                        style: {{
-                            'opacity': 1,
-                            'width': 'mapData(width, 2, 8, 4, 12)',
-                            'z-index': 10
-                        }}
-                    }},
-                    {{
-                        selector: 'edge.dimmed',
-                        style: {{
-                            'opacity': 0.1
-                        }}
-                    }},
-                    {{
-                        selector: 'edge:selected',
-                        style: {{
-                            'opacity': 1,
-                            'width': 'mapData(width, 2, 8, 4, 12)'
-                        }}
-                    }}
-                ],
-                layout: {{
-                    name: 'circle',
-                    avoidOverlap: true,
-                    spacingFactor: 1.2,
-                    padding: 50,
-                    animate: false
+                    borderWidth: 2,
+                    borderWidthSelected: 3,
+                    shadow: true
                 }},
-                userZoomingEnabled: false,
-                userPanningEnabled: false,
-                boxSelectionEnabled: false,
-                autoungrabify: true,
-                wheelSensitivity: 0,
-                minZoom: 0.5,
-                maxZoom: 2,
-                pixelRatio: 'auto'
+                edges: {{
+                    arrows: {{
+                        to: {{ enabled: true, scaleFactor: 0.8 }}
+                    }},
+                    font: {{
+                        size: 11,
+                        color: '#ffffff',
+                        strokeWidth: 3,
+                        strokeColor: 'rgba(0,0,0,0.8)',
+                        align: 'middle'
+                    }},
+                    smooth: {{
+                        type: 'curvedCW',
+                        roundness: 0.2
+                    }},
+                    selfReferenceSize: 30,
+                    shadow: true
+                }},
+                physics: {{
+                    enabled: false
+                }},
+                layout: {{
+                    improvedLayout: true
+                }},
+                interaction: {{
+                    dragNodes: false,
+                    dragView: false,
+                    zoomView: false,
+                    selectable: true,
+                    hover: true
+                }}
+            }};
+            
+            const network = new vis.Network(container, data, options);
+            
+            window.visInstances = window.visInstances || {{}};
+            window.visInstances[graphId] = network;
+            
+            // Fit to container after stabilization
+            network.once('stabilized', function() {{
+                network.fit({{ padding: 50, animation: false }});
             }});
             
-            window.cyInstances[graphId] = cy;
+            // Also fit after a delay
+            setTimeout(() => {{
+                network.fit({{ padding: 50, animation: false }});
+            }}, 100);
+            setTimeout(() => {{
+                network.fit({{ padding: 50, animation: false }});
+            }}, 300);
             
-            // Center and fit the graph after layout
-            cy.on('layoutstop', function() {{
-                setTimeout(function() {{
-                    cy.resize();
-                    cy.fit(null, 40);
-                    cy.center();
-                }}, 50);
-            }});
-            
-            // Also fit immediately after ready
-            cy.ready(function() {{
-                setTimeout(function() {{
-                    cy.resize();
-                    cy.fit(null, 40);
-                    cy.center();
-                }}, 100);
-            }});
-            
-            // Node hover - highlight outgoing edges and target nodes
-            cy.on('mouseover', 'node', function(e) {{
-                const node = e.target;
-                node.addClass('hover');
-                
-                // Dim all elements first
-                cy.elements().addClass('dimmed');
-                node.removeClass('dimmed');
-                
-                // Highlight outgoing edges and their targets
-                const outgoingEdges = node.outgoers('edge');
-                outgoingEdges.removeClass('dimmed').addClass('highlighted');
-                
-                // Keep target nodes visible
-                outgoingEdges.targets().removeClass('dimmed').addClass('connected');
-                
-                // Also highlight self-loops
-                const selfLoops = cy.edges().filter(edge => 
-                    edge.source().id() === node.id() && edge.target().id() === node.id()
-                );
-                selfLoops.removeClass('dimmed').addClass('highlighted');
-            }});
-            
-            cy.on('mouseout', 'node', function(e) {{
-                const node = e.target;
-                node.removeClass('hover');
-                cy.elements().removeClass('dimmed highlighted connected');
-            }});
-            
-            // Edge tooltip - use separate handlers for tap and mouseover
-            cy.on('tap', 'edge', function(e) {{
-                e.stopPropagation();
-                const edge = e.target;
-                const idx = edge.data('idx');
-                const renderedPos = edge.renderedMidpoint();
-                showGraphTooltip(graphId, idx, renderedPos.x, renderedPos.y);
-            }});
-            
-            cy.on('mouseover', 'edge', function(e) {{
-                const edge = e.target;
-                const idx = edge.data('idx');
-                const renderedPos = edge.renderedMidpoint();
-                showGraphTooltip(graphId, idx, renderedPos.x, renderedPos.y);
-            }});
-            
-            cy.on('mouseout', 'edge', function() {{
-                hideGraphTooltip(graphId);
-            }});
-            
-            // Click on empty space to hide tooltip
-            cy.on('tap', function(e) {{
-                if (e.target === cy) {{
-                    hideGraphTooltip(graphId);
+            // Edge hover for tooltip
+            network.on('hoverEdge', function(params) {{
+                const edgeId = params.edge;
+                const edge = edges.get(edgeId);
+                if (edge && edge.tooltipData) {{
+                    const pointer = params.pointer.DOM;
+                    const containerRect = container.getBoundingClientRect();
+                    showGraphTooltip(graphId, edge.tooltipData, containerRect.left + pointer.x, containerRect.top + pointer.y);
                 }}
             }});
             
-            // Node tap - stop propagation so it doesn't interfere
-            cy.on('tap', 'node', function(e) {{
-                e.stopPropagation();
+            network.on('blurEdge', function() {{
+                hideGraphTooltip(graphId);
+            }});
+            
+            // Node hover - highlight only outgoing edges
+            network.on('hoverNode', function(params) {{
+                const nodeId = params.node;
+                const allEdges = edges.get();
+                const updates = [];
+                
+                allEdges.forEach(edge => {{
+                    const isOutgoing = edge.from === nodeId;
+                    const isConnected = edge.from === nodeId || edge.to === nodeId;
+                    const origWidth = originalEdgeWidths[edge.id] || edge.width;
+                    updates.push({{
+                        id: edge.id,
+                        font: {{
+                            size: isConnected ? 12 : 0,
+                            color: '#ffffff',
+                            strokeWidth: 3,
+                            strokeColor: 'rgba(0,0,0,0.8)'
+                        }},
+                        color: {{
+                            color: isOutgoing ? edge.color.color : 'rgba(150,150,150,0.15)',
+                            highlight: edge.color.color,
+                            hover: edge.color.color
+                        }},
+                        width: isOutgoing ? origWidth * 1.5 : 0.3
+                    }});
+                }});
+                edges.update(updates);
+                
+                // Also dim unconnected nodes - only show targets of outgoing edges
+                const allNodes = nodes.get();
+                const connectedNodeIds = new Set([nodeId]);
+                allEdges.forEach(edge => {{
+                    if (edge.from === nodeId) connectedNodeIds.add(edge.to);
+                }});
+                
+                const nodeUpdates = allNodes.map(node => ({{
+                    id: node.id,
+                    opacity: connectedNodeIds.has(node.id) ? 1.0 : 0.3
+                }}));
+                nodes.update(nodeUpdates);
+            }});
+            
+            network.on('blurNode', function() {{
+                // Restore all edges to original state
+                const allEdges = edges.get();
+                const updates = allEdges.map(edge => ({{
+                    id: edge.id,
+                    font: {{
+                        size: 11,
+                        color: '#ffffff',
+                        strokeWidth: 3,
+                        strokeColor: 'rgba(0,0,0,0.8)'
+                    }},
+                    color: {{
+                        color: edge.color.highlight || edge.color.color,
+                        highlight: edge.color.highlight || edge.color.color,
+                        hover: edge.color.hover || edge.color.color
+                    }},
+                    width: originalEdgeWidths[edge.id] || edge.width
+                }}));
+                edges.update(updates);
+                
+                // Restore all nodes
+                const allNodes = nodes.get();
+                const nodeUpdates = allNodes.map(node => ({{
+                    id: node.id,
+                    opacity: 1.0
+                }}));
+                nodes.update(nodeUpdates);
+            }});
+            
+            // Click on edge
+            network.on('selectEdge', function(params) {{
+                if (params.edges.length > 0) {{
+                    const edgeId = params.edges[0];
+                    const edge = edges.get(edgeId);
+                    if (edge && edge.tooltipData) {{
+                        const pointer = params.pointer.DOM;
+                        const containerRect = container.getBoundingClientRect();
+                        showGraphTooltip(graphId, edge.tooltipData, containerRect.left + pointer.x, containerRect.top + pointer.y);
+                    }}
+                }}
+            }});
+            
+            network.on('deselectEdge', function() {{
+                hideGraphTooltip(graphId);
             }});
         }}
         
-        // Initialize graphs when their slide is revealed (after click)
+        // Initialize graphs when their slide is revealed
         function initGraphsOnReveal(slideIndex) {{
             const slide = slides[slideIndex];
             if (!slide) return;
-            
-            const graphIds = ['mentions_graph', 'reactions_graph'];
-            graphIds.forEach(graphId => {{
+
+            GRAPH_IDS.forEach(graphId => {{
                 if (slide.dataset.category === graphId) {{
-                    // Wait for reveal animation and DOM to update
                     setTimeout(() => {{
-                        initCytoscapeGraph(graphId);
+                        initVisGraph(graphId);
                     }}, 400);
                 }}
             }});
         }}
         
-        // Also try to init graph when navigating to a slide that's already revealed
+        // Try to init graph when navigating to already revealed slide
         function tryInitGraphOnSlide(slideIndex) {{
             const slide = slides[slideIndex];
             if (!slide) return;
-            
-            const graphIds = ['mentions_graph', 'reactions_graph'];
-            graphIds.forEach(graphId => {{
+
+            GRAPH_IDS.forEach(graphId => {{
                 if (slide.dataset.category === graphId && isSlideRevealed(slideIndex)) {{
                     setTimeout(() => {{
-                        if (!window.cyInstances[graphId]) {{
-                            initCytoscapeGraph(graphId);
+                        if (!window.visInstances || !window.visInstances[graphId]) {{
+                            initVisGraph(graphId);
                         }} else {{
-                            // Resize and re-center if already exists
-                            const cy = window.cyInstances[graphId];
-                            cy.resize();
-                            cy.fit(null, 40);
-                            cy.center();
+                            window.visInstances[graphId].fit({{ padding: 50, animation: false }});
                         }}
                     }}, 150);
                 }}
             }});
         }}
+
+        // Keep graphs responsive on viewport changes
+        window.addEventListener('resize', () => {{
+            GRAPH_IDS.forEach(id => {{
+                if (window.visInstances && window.visInstances[id]) {{
+                    window.visInstances[id].fit({{ padding: 50, animation: false }});
+                }}
+            }});
+        }});
         
         // Hook into revealCurrentSlide to init graphs
         const originalRevealCurrentSlide = revealCurrentSlide;
@@ -1847,9 +1807,9 @@ def generate_html(result: AnalysisResult, output_path: Path) -> None:
 
 
 def generate_graph_slide(cat: CategoryResult) -> str:
-    """Generate HTML for a network graph slide using Cytoscape.js."""
+    """Generate HTML for a network graph slide using vis.js Network."""
     import json
-    import html
+    import math
     
     edges = cat.winners  # List of dicts with 'from', 'to', 'weight', and optionally 'emojis'
     is_reactions = cat.category_id == "reactions_graph"
@@ -1866,47 +1826,51 @@ def generate_graph_slide(cat: CategoryResult) -> str:
     # Unique ID for this graph
     graph_id = cat.category_id
     
-    # Build Cytoscape elements
-    cy_nodes = []
+    # Build vis.js nodes with circular layout positions
+    vis_nodes = []
+    num_nodes = len(nodes)
+    radius = 180  # Layout radius
+    
     for i, node in enumerate(nodes):
         display_name = node.split()[0] if node else node
         if len(display_name) > 8:
             display_name = display_name[:7] + "."
-        cy_nodes.append({
-            'data': {
-                'id': node,
-                'label': display_name,
-                'color': node_colors[i % len(node_colors)]
-            }
+        
+        # Calculate position on circle
+        angle = (2 * math.pi * i) / num_nodes - math.pi / 2  # Start from top
+        x = radius * math.cos(angle)
+        y = radius * math.sin(angle)
+        
+        vis_nodes.append({
+            'id': node,
+            'label': display_name,
+            'color': {
+                'background': node_colors[i % len(node_colors)],
+                'border': 'rgba(255,255,255,0.4)',
+                'highlight': {
+                    'background': node_colors[i % len(node_colors)],
+                    'border': '#ffffff'
+                }
+            },
+            'x': x,
+            'y': y,
+            'fixed': True  # Keep nodes in place
         })
     
     # Calculate max weight for scaling
     max_weight = max(edge['weight'] for edge in edges) if edges else 1
     
-    cy_edges = []
-    edge_data = []  # For tooltip data
+    # Build vis.js edges
+    vis_edges = []
     for idx, edge in enumerate(edges):
-        is_self_loop = edge['from'] == edge['to']
         weight = edge['weight']
         
         # Get color based on 'from' node
         from_idx = nodes.index(edge['from'])
         color = node_colors[from_idx % len(node_colors)]
         
-        # Scale width based on weight (2-8 px)
-        width = max(2, min(8, (weight / max_weight) * 8))
-        
-        cy_edges.append({
-            'data': {
-                'id': f'e{idx}',
-                'source': edge['from'],
-                'target': edge['to'],
-                'weight': weight,
-                'color': color,
-                'width': width,
-                'idx': idx
-            }
-        })
+        # Scale width based on weight (1-6 px)
+        width = max(1, min(6, (weight / max_weight) * 6))
         
         # Build tooltip data
         from_name = edge['from'].split()[0] if edge['from'] else edge['from']
@@ -1915,20 +1879,30 @@ def generate_graph_slide(cat: CategoryResult) -> str:
         tooltip_data = {
             'from': from_name,
             'to': to_name,
-            'weight': weight,
-            'isSelf': is_self_loop
+            'weight': weight
         }
         
         if is_reactions and 'emojis' in edge and edge['emojis']:
             emoji_str = ' '.join([f"{e if e != '❤' else '❤️'}×{c}" for e, c in edge['emojis'][:5]])
             tooltip_data['emojis'] = emoji_str
         
-        edge_data.append(tooltip_data)
+        vis_edges.append({
+            'id': f'e{idx}',
+            'from': edge['from'],
+            'to': edge['to'],
+            'label': str(weight),
+            'width': width,
+            'color': {
+                'color': color,
+                'highlight': color,
+                'hover': color
+            },
+            'tooltipData': tooltip_data
+        })
     
     # JSON encode data
-    cy_elements = {'nodes': cy_nodes, 'edges': cy_edges}
-    elements_json = json.dumps(cy_elements, ensure_ascii=False)
-    edge_data_json = json.dumps(edge_data, ensure_ascii=False)
+    vis_data = {'nodes': vis_nodes, 'edges': vis_edges}
+    data_json = json.dumps(vis_data, ensure_ascii=False)
     
     # Assemble the slide
     slide = f'''
@@ -1945,10 +1919,10 @@ def generate_graph_slide(cat: CategoryResult) -> str:
                     <span class="icon">{cat.icon}</span>
                     <h2 class="title">{cat.title}</h2>
                     <div class="network-graph-container" id="graph-container-{graph_id}">
-                        <div class="cytoscape-graph" id="cy-{graph_id}"></div>
+                        <div class="vis-graph" id="vis-{graph_id}"></div>
                         <div class="graph-tooltip" id="tooltip-{graph_id}"></div>
                         <div class="graph-legend">
-                            Kliknij strzałkę aby zobaczyć szczegóły
+                            Najedź na strzałkę aby zobaczyć szczegóły
                         </div>
                     </div>
                     {f'<p class="extra-info">{cat.extra_info}</p>' if cat.extra_info else ''}
@@ -1957,11 +1931,8 @@ def generate_graph_slide(cat: CategoryResult) -> str:
             </div>
         </div>
         <script>
-            window.graphData = window.graphData || {{}};
-            window.graphData['{graph_id}'] = {edge_data_json};
-            window.cyElements = window.cyElements || {{}};
-            window.cyElements['{graph_id}'] = {elements_json};
-            window.cyInstances = window.cyInstances || {{}};
+            window.visGraphData = window.visGraphData || {{}};
+            window.visGraphData['{graph_id}'] = {data_json};
         </script>'''
     
     return slide
