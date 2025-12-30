@@ -857,7 +857,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
                 subtitle="Kto kogo oznacza w rozmowach",
                 icon="📢",
                 winner=top_mentioner[0] if top_mentioner else None,
-                winners=mentions_edges[:30],  # Top 30 edges for the graph
+                winners=mentions_edges,  # All edges
                 value=total_mentions,
                 extra_info=f"Łącznie {total_mentions} oznaczeń",
                 fun_fact=f"Najczęściej oznaczany: {top_mentioned[0]} ({top_mentioned[1]}x)" if top_mentioned else None
@@ -901,7 +901,7 @@ def analyze_conversation(conversation: Conversation) -> AnalysisResult:
                 subtitle="Kto komu daje reakcje",
                 icon="💕",
                 winner=top_reactor[0] if top_reactor else None,
-                winners=reactions_edges[:30],  # Top 30 edges for the graph
+                winners=reactions_edges,  # All edges
                 value=total_reactions,
                 extra_info=f"Łącznie {total_reactions} reakcji między osobami",
                 fun_fact=f"Najwięcej reakcji dostaje: {top_receiver[0]} ({top_receiver[1]}x)" if top_receiver else None
